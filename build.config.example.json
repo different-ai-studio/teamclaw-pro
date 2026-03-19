@@ -1,0 +1,23 @@
+{
+  "team": {
+    "llm": {
+      "baseUrl": "https://api.example.com/v1",
+      "model": "gpt-4o",
+      "modelName": "GPT-4o"
+    },
+    "lockLlmConfig": false
+  },
+  "app": {
+    "name": "TeamClaw"
+  },
+  "features": {
+    "advancedMode": true,
+    "teamMode": true,
+    "updater": true,
+    "channels": true
+  },
+  "defaults": {
+    "locale": "zh-CN",
+    "theme": "system"
+  }
+}
