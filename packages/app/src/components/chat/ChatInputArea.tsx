@@ -151,6 +151,7 @@ export function ChatInputArea({
 
   // Team mode
   const teamMode = useTeamModeStore(s => s.teamMode);
+  const devUnlocked = useTeamModeStore(s => s.devUnlocked);
 
   // Model selector
   const [modelSelectorOpen, setModelSelectorOpen] = React.useState(false);
@@ -408,7 +409,7 @@ export function ChatInputArea({
                 Plan
               </Button>
 
-              {!teamMode && selectedModelOption?.provider !== 'team' && (
+              {(!teamMode || devUnlocked) && selectedModelOption?.provider !== 'team' && (
                 <ModelSelector
                   open={modelSelectorOpen}
                   onOpenChange={setModelSelectorOpen}
