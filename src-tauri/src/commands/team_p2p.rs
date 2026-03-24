@@ -986,6 +986,8 @@ async fn disk_to_doc_watcher(
 
                             let key = rel_path;
                             if let Ok(content) = std::fs::read(path) {
+                                // Iroh rejects empty blobs; use a single newline as placeholder
+                                let content = if content.is_empty() { vec![b'\n'] } else { content };
                                 if let Err(e) = doc.set_bytes(author, key.clone(), content).await {
                                     eprintln!("[P2P] Failed to sync local change '{}': {}", key, e);
                                 }
