@@ -253,9 +253,16 @@ describe("useAutoSave", () => {
       },
     );
 
-    // Trigger save
+    // Trigger save (advances past debounce, firing the setTimeout callback)
     await act(async () => {
       await vi.advanceTimersByTimeAsync(1100);
+    });
+
+    // doSave is async (hashContent + writeTextFile); switch to real timers so
+    // waitFor's polling can observe when the hash has been stored.
+    vi.useRealTimers();
+    await waitFor(() => {
+      expect(result.current.saveStatus).toBe("saved");
     });
 
     // Check if the same content is detected as self-write
@@ -265,6 +272,9 @@ describe("useAutoSave", () => {
     });
 
     expect(isSelf).toBe(true);
+
+    // Restore fake timers for the afterEach cleanup
+    vi.useFakeTimers();
   });
 
   // 9.7

@@ -46,7 +46,7 @@ beforeEach(() => {
   ;(window as unknown as { __TAURI__: unknown }).__TAURI__ = {}
   ;(window as unknown as { __TAURI_INTERNALS__: unknown }).__TAURI_INTERNALS__ = {
     invoke: mockInvoke,
-    transformCallback: vi.fn((callback: unknown) => {
+    transformCallback: vi.fn((_callback: unknown) => {
       const id = Math.random()
       return id
     }),

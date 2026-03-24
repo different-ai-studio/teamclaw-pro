@@ -946,6 +946,7 @@ function App() {
   const openCodeReady = useWorkspaceStore((s) => s.openCodeReady);
   const { showSetupGuide, dependencies, handleRecheck, handleSetupContinue } = useSetupGuide(openCodeReady);
   const { showConsentDialog, setShowConsentDialog } = useTelemetryConsent(showSetupGuide);
+  const devUnlocked = useTeamModeStore(s => s.devUnlocked)
 
   if (spotlightMode) {
     return (
@@ -990,8 +991,6 @@ function App() {
       )}
     </>
   )
-
-  const devUnlocked = useTeamModeStore(s => s.devUnlocked)
 
   return isTauri() ? (
     <div className="h-screen w-screen rounded-2xl overflow-hidden bg-background">

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, fireEvent, act, cleanup } from '@testing-library/react'
+import { render, screen, act, cleanup } from '@testing-library/react'
 import * as React from 'react'
 import type { TeamMember } from '@/lib/git/types'
 

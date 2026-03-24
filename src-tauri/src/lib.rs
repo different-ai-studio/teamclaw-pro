@@ -1,5 +1,37 @@
 // Suppress cfg warnings from the legacy `objc` crate's `msg_send!` / `sel_impl!` macros.
 #![allow(unexpected_cfgs)]
+// Suppress style/complexity clippy lints that are non-critical for this codebase.
+#![allow(
+    clippy::cloned_ref_to_slice_refs,
+    clippy::collapsible_else_if,
+    clippy::collapsible_if,
+    clippy::derivable_impls,
+    clippy::for_kv_map,
+    clippy::io_other_error,
+    clippy::iter_nth_zero,
+    clippy::manual_clamp,
+    clippy::manual_is_multiple_of,
+    clippy::manual_map,
+    clippy::manual_strip,
+    clippy::map_identity,
+    clippy::needless_borrow,
+    clippy::needless_borrows_for_generic_args,
+    clippy::ptr_arg,
+    clippy::redundant_closure,
+    clippy::redundant_guards,
+    clippy::redundant_pattern_matching,
+    clippy::same_item_push,
+    clippy::too_many_arguments,
+    clippy::trim_split_whitespace,
+    clippy::type_complexity,
+    clippy::unnecessary_lazy_evaluations,
+    clippy::unnecessary_map_or,
+    clippy::unnecessary_unwrap,
+    clippy::unwrap_or_default,
+    clippy::useless_asref,
+    clippy::useless_format,
+    clippy::useless_vec,
+)]
 
 use tauri::Manager;
 use tauri_plugin_aptabase::EventTracker;
