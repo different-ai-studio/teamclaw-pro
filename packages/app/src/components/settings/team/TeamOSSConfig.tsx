@@ -10,6 +10,7 @@ import { TeamMemberList } from '@/components/settings/TeamMemberList'
 import { invoke } from '@tauri-apps/api/core'
 import type { DeviceInfo } from '@/lib/git/types'
 import { useTeamModeStore } from '@/stores/team-mode'
+import { useProviderStore } from '@/stores/provider'
 import {
   Cloud,
   Copy,
@@ -192,6 +193,13 @@ export function TeamOSSConfig() {
       setTeamName('')
       setOwnerName('')
       setOwnerEmail('')
+      // Load team config and apply LLM provider
+      const store = useTeamModeStore.getState()
+      await store.loadTeamConfig(workspacePath)
+      if (useTeamModeStore.getState().teamMode) {
+        await store.applyTeamModelToOpenCode(workspacePath)
+      }
+      await useProviderStore.getState().initAll()
     } catch {
       // error is set in the store
     } finally {
@@ -214,6 +222,13 @@ export function TeamOSSConfig() {
         setJoinTeamSecret('')
         await teamMembersStore.loadMembers()
         await teamMembersStore.loadMyRole()
+        // Load team config and apply LLM provider
+        const store = useTeamModeStore.getState()
+        await store.loadTeamConfig(workspacePath)
+        if (useTeamModeStore.getState().teamMode) {
+          await store.applyTeamModelToOpenCode(workspacePath)
+        }
+        await useProviderStore.getState().initAll()
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err)
