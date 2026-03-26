@@ -61,7 +61,9 @@ async fn get_db(state: &TelemetryState) -> Result<TelemetryDb, String> {
 
     // Initialize the database
     let home = dirs_next().ok_or("Failed to determine home directory")?;
-    let db_path = home.join(crate::commands::TEAMCLAW_DIR).join("telemetry.db");
+    let db_path = home
+        .join(crate::commands::TEAMCLAW_DIR)
+        .join("telemetry.db");
     let db = TelemetryDb::new(&db_path).await?;
     *db_lock = Some(db.clone());
     Ok(db)
@@ -249,7 +251,9 @@ pub async fn identity_bind(
     display_name: String,
 ) -> Result<(), String> {
     let registry = get_identity_registry(&telemetry_state, &identity_state).await?;
-    registry.bind(&platform, &external_id, &uid, &display_name).await
+    registry
+        .bind(&platform, &external_id, &uid, &display_name)
+        .await
 }
 
 #[tauri::command]
@@ -518,10 +522,22 @@ pub async fn telemetry_export_leaderboard(
             .join(crate::commands::TEAMCLAW_DIR)
             .join("stats.json");
         let local_stats = if stats_path.exists() {
-            let content = std::fs::read_to_string(&stats_path)
-                .map_err(|e| format!("Failed to read {}/stats.json: {}", crate::commands::TEAMCLAW_DIR, e))?;
-            serde_json::from_str::<crate::commands::local_stats::LocalStats>(&content)
-                .map_err(|e| format!("Failed to parse {}/stats.json: {}", crate::commands::TEAMCLAW_DIR, e))?
+            let content = std::fs::read_to_string(&stats_path).map_err(|e| {
+                format!(
+                    "Failed to read {}/stats.json: {}",
+                    crate::commands::TEAMCLAW_DIR,
+                    e
+                )
+            })?;
+            serde_json::from_str::<crate::commands::local_stats::LocalStats>(&content).map_err(
+                |e| {
+                    format!(
+                        "Failed to parse {}/stats.json: {}",
+                        crate::commands::TEAMCLAW_DIR,
+                        e
+                    )
+                },
+            )?
         } else {
             // If stats.json doesn't exist, use default
             crate::commands::local_stats::LocalStats::default()

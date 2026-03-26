@@ -24,7 +24,12 @@ pub(crate) fn keyring_service(key: &str) -> String {
 
 /// Get the teamclaw.json path inside the workspace.
 fn get_teamclaw_json_path(workspace_path: &str) -> String {
-    format!("{}/{}/{}", workspace_path, super::TEAMCLAW_DIR, super::CONFIG_FILE_NAME)
+    format!(
+        "{}/{}/{}",
+        workspace_path,
+        super::TEAMCLAW_DIR,
+        super::CONFIG_FILE_NAME
+    )
 }
 
 /// Read the envVars index from teamclaw.json (preserving all other fields).
@@ -37,7 +42,8 @@ fn read_teamclaw_json(workspace_path: &str) -> Result<serde_json::Value, String>
     }
     let content = std::fs::read_to_string(&path)
         .map_err(|e| format!("Failed to read {}: {}", super::CONFIG_FILE_NAME, e))?;
-    serde_json::from_str(&content).map_err(|e| format!("Failed to parse {}: {}", super::CONFIG_FILE_NAME, e))
+    serde_json::from_str(&content)
+        .map_err(|e| format!("Failed to parse {}: {}", super::CONFIG_FILE_NAME, e))
 }
 
 /// Write the full teamclaw.json back (preserving all other fields).
@@ -47,7 +53,8 @@ fn write_teamclaw_json(workspace_path: &str, json: &serde_json::Value) -> Result
     let path = get_teamclaw_json_path(workspace_path);
     let content = serde_json::to_string_pretty(json)
         .map_err(|e| format!("Failed to serialize {}: {}", super::CONFIG_FILE_NAME, e))?;
-    std::fs::write(&path, content).map_err(|e| format!("Failed to write {}: {}", super::CONFIG_FILE_NAME, e))
+    std::fs::write(&path, content)
+        .map_err(|e| format!("Failed to write {}: {}", super::CONFIG_FILE_NAME, e))
 }
 
 /// Read the envVars array from the JSON value.

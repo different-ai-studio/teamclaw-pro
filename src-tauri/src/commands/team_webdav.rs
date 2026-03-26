@@ -162,7 +162,8 @@ pub fn write_webdav_config(workspace_path: &str, config: &WebDavConfig) -> Resul
 
     let content = serde_json::to_string_pretty(&json)
         .map_err(|e| format!("Failed to serialize {}: {e}", super::CONFIG_FILE_NAME))?;
-    fs::write(&config_path, content).map_err(|e| format!("Failed to write {}: {e}", super::CONFIG_FILE_NAME))?;
+    fs::write(&config_path, content)
+        .map_err(|e| format!("Failed to write {}: {e}", super::CONFIG_FILE_NAME))?;
 
     Ok(())
 }
@@ -974,7 +975,11 @@ mod tests {
         fs::create_dir_all(&teamclaw_dir).unwrap();
 
         let existing = r#"{"team": {"gitUrl": "https://github.com/org/repo", "enabled": true}}"#;
-        fs::write(teamclaw_dir.join(crate::commands::CONFIG_FILE_NAME), existing).unwrap();
+        fs::write(
+            teamclaw_dir.join(crate::commands::CONFIG_FILE_NAME),
+            existing,
+        )
+        .unwrap();
 
         let cfg = WebDavConfig {
             url: "https://dav.example.com/team/".to_string(),
@@ -996,7 +1001,8 @@ mod tests {
     #[test]
     fn test_parse_propfind_response() {
         let team = super::TEAM_REPO_DIR;
-        let xml = format!(r#"<?xml version="1.0" encoding="utf-8"?>
+        let xml = format!(
+            r#"<?xml version="1.0" encoding="utf-8"?>
 <D:multistatus xmlns:D="DAV:">
   <D:response>
     <D:href>/dav/{team}/</D:href>
@@ -1028,7 +1034,8 @@ mod tests {
       <D:status>HTTP/1.1 200 OK</D:status>
     </D:propstat>
   </D:response>
-</D:multistatus>"#);
+</D:multistatus>"#
+        );
 
         let base = format!("/dav/{team}/");
         let entries = parse_propfind_response(&xml, &base).unwrap();
@@ -1046,7 +1053,8 @@ mod tests {
     #[test]
     fn test_parse_propfind_empty_response() {
         let team = super::TEAM_REPO_DIR;
-        let xml = format!(r#"<?xml version="1.0" encoding="utf-8"?>
+        let xml = format!(
+            r#"<?xml version="1.0" encoding="utf-8"?>
 <D:multistatus xmlns:D="DAV:">
   <D:response>
     <D:href>/dav/{team}/</D:href>
@@ -1057,7 +1065,8 @@ mod tests {
       <D:status>HTTP/1.1 200 OK</D:status>
     </D:propstat>
   </D:response>
-</D:multistatus>"#);
+</D:multistatus>"#
+        );
 
         let base = format!("/dav/{team}/");
         let entries = parse_propfind_response(&xml, &base).unwrap();
@@ -1519,7 +1528,11 @@ mod integration_tests {
         sync_from_webdav(&client, &url, &auth, workspace)
             .await
             .unwrap();
-        assert!(tmp.path().join(super::TEAM_REPO_DIR).join("old.txt").exists());
+        assert!(tmp
+            .path()
+            .join(super::TEAM_REPO_DIR)
+            .join("old.txt")
+            .exists());
 
         // Second sync: old.txt removed from remote
         server.reset().await;
@@ -1553,7 +1566,15 @@ mod integration_tests {
             .await
             .unwrap();
         assert_eq!(result.files_deleted, 1);
-        assert!(!tmp.path().join(super::TEAM_REPO_DIR).join("old.txt").exists());
-        assert!(tmp.path().join(super::TEAM_REPO_DIR).join("README.md").exists());
+        assert!(!tmp
+            .path()
+            .join(super::TEAM_REPO_DIR)
+            .join("old.txt")
+            .exists());
+        assert!(tmp
+            .path()
+            .join(super::TEAM_REPO_DIR)
+            .join("README.md")
+            .exists());
     }
 }

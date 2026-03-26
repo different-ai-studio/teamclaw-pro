@@ -253,7 +253,8 @@ pub async fn send_message_async_with_approval(
         for part in parts.iter_mut() {
             if part.get("type").and_then(|t| t.as_str()) == Some("text") {
                 if let Some(text) = part.get("text").and_then(|t| t.as_str()) {
-                    let prefixed = format!("[{}/{}] {}", sender.display_name, sender.platform, text);
+                    let prefixed =
+                        format!("[{}/{}] {}", sender.display_name, sender.platform, text);
                     part["text"] = serde_json::Value::String(prefixed);
                 }
                 break; // Only prefix the first text part

@@ -670,7 +670,11 @@ pub async fn team_init_repo(
     // Write LLM config to .teamclaw/teamclaw.json
     let llm_config = build_llm_config(llm_base_url, llm_model, llm_model_name);
     write_llm_config(&workspace_path, Some(&llm_config))?;
-    println!("[Team Init] Wrote LLM config to {}/{}", super::TEAMCLAW_DIR, super::CONFIG_FILE_NAME);
+    println!(
+        "[Team Init] Wrote LLM config to {}/{}",
+        super::TEAMCLAW_DIR,
+        super::CONFIG_FILE_NAME
+    );
 
     // Sync .mcp/ from team dir into workspace opencode.json
     match sync_team_mcp_configs_from_dir(&team_dir, &workspace_path) {

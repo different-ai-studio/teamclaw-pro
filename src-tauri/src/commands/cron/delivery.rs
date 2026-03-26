@@ -61,9 +61,20 @@ impl DeliveryManager {
             crate::commands::TEAMCLAW_DIR,
             crate::commands::CONFIG_FILE_NAME
         );
-        let content = std::fs::read_to_string(&path)
-            .map_err(|e| format!("Failed to read {}: {}", crate::commands::CONFIG_FILE_NAME, e))?;
-        serde_json::from_str(&content).map_err(|e| format!("Failed to parse {}: {}", crate::commands::CONFIG_FILE_NAME, e))
+        let content = std::fs::read_to_string(&path).map_err(|e| {
+            format!(
+                "Failed to read {}: {}",
+                crate::commands::CONFIG_FILE_NAME,
+                e
+            )
+        })?;
+        serde_json::from_str(&content).map_err(|e| {
+            format!(
+                "Failed to parse {}: {}",
+                crate::commands::CONFIG_FILE_NAME,
+                e
+            )
+        })
     }
 
     // ==================== Discord ====================
@@ -78,7 +89,12 @@ impl DeliveryManager {
         let token = config["channels"]["discord"]["token"]
             .as_str()
             .filter(|t| !t.is_empty())
-            .ok_or_else(|| format!("Discord bot token not configured in {}", crate::commands::CONFIG_FILE_NAME))?;
+            .ok_or_else(|| {
+                format!(
+                    "Discord bot token not configured in {}",
+                    crate::commands::CONFIG_FILE_NAME
+                )
+            })?;
 
         // Determine the Discord channel ID to send to
         let channel_id = if target.starts_with("dm:") {
@@ -128,11 +144,21 @@ impl DeliveryManager {
         let app_id = config["channels"]["feishu"]["appId"]
             .as_str()
             .filter(|s| !s.is_empty())
-            .ok_or_else(|| format!("Feishu app ID not configured in {}", crate::commands::CONFIG_FILE_NAME))?;
+            .ok_or_else(|| {
+                format!(
+                    "Feishu app ID not configured in {}",
+                    crate::commands::CONFIG_FILE_NAME
+                )
+            })?;
         let app_secret = config["channels"]["feishu"]["appSecret"]
             .as_str()
             .filter(|s| !s.is_empty())
-            .ok_or_else(|| format!("Feishu app secret not configured in {}", crate::commands::CONFIG_FILE_NAME))?;
+            .ok_or_else(|| {
+                format!(
+                    "Feishu app secret not configured in {}",
+                    crate::commands::CONFIG_FILE_NAME
+                )
+            })?;
 
         let chunks = split_message(message, 4000);
         for chunk in chunks {
@@ -156,7 +182,10 @@ impl DeliveryManager {
     ) -> Result<String, String> {
         let email_val = &config["channels"]["email"];
         if email_val.is_null() {
-            return Err(format!("Email not configured in {}", crate::commands::CONFIG_FILE_NAME));
+            return Err(format!(
+                "Email not configured in {}",
+                crate::commands::CONFIG_FILE_NAME
+            ));
         }
 
         // Parse into the gateway's EmailConfig type (same struct used by the email gateway)
@@ -185,7 +214,12 @@ impl DeliveryManager {
         let token = config["channels"]["kook"]["token"]
             .as_str()
             .filter(|t| !t.is_empty())
-            .ok_or_else(|| format!("KOOK bot token not configured in {}", crate::commands::CONFIG_FILE_NAME))?;
+            .ok_or_else(|| {
+                format!(
+                    "KOOK bot token not configured in {}",
+                    crate::commands::CONFIG_FILE_NAME
+                )
+            })?;
 
         let (target_id, is_dm) = if target.starts_with("dm:") {
             let user_id = target.strip_prefix("dm:").unwrap_or(target);

@@ -263,7 +263,9 @@ impl IdentityRegistry {
     }
 
     /// Get aggregated usage stats per user.
-    pub async fn get_usage_by_user(&self) -> Result<Vec<(String, String, i64, i64, f64, i64)>, String> {
+    pub async fn get_usage_by_user(
+        &self,
+    ) -> Result<Vec<(String, String, i64, i64, f64, i64)>, String> {
         let conn = self.db.conn().await;
         let mut rows = conn
             .query(
@@ -395,7 +397,7 @@ mod tests {
         let usage = registry.get_usage_by_user().await.unwrap();
         assert_eq!(usage.len(), 1);
         assert_eq!(usage[0].0, user.uid); // uid
-        assert_eq!(usage[0].2, 100);      // tokens_input
+        assert_eq!(usage[0].2, 100); // tokens_input
     }
 
     #[tokio::test]

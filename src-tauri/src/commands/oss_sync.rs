@@ -151,7 +151,11 @@ impl OssSyncManager {
     // S3 Client
     // -----------------------------------------------------------------------
 
-    fn create_s3_client(creds: &OssCredentials, config: &OssConfig, force_path_style: bool) -> aws_sdk_s3::Client {
+    fn create_s3_client(
+        creds: &OssCredentials,
+        config: &OssConfig,
+        force_path_style: bool,
+    ) -> aws_sdk_s3::Client {
         let credentials = aws_sdk_s3::config::Credentials::new(
             &creds.access_key_id,
             &creds.access_key_secret,
@@ -199,7 +203,11 @@ impl OssSyncManager {
 
         self.credentials = Some(resp.credentials.clone());
         self.oss_config = Some(resp.oss.clone());
-        self.s3_client = Some(Self::create_s3_client(&resp.credentials, &resp.oss, self.force_path_style));
+        self.s3_client = Some(Self::create_s3_client(
+            &resp.credentials,
+            &resp.oss,
+            self.force_path_style,
+        ));
 
         self.role =
             serde_json::from_str(&format!("\"{}\"", resp.role)).unwrap_or(MemberRole::Editor);
@@ -1153,7 +1161,8 @@ pub fn write_oss_config(workspace_path: &str, config: &OssTeamConfig) -> Result<
     let mut json: Value = if config_path.exists() {
         let content = std::fs::read_to_string(&config_path)
             .map_err(|e| format!("Failed to read {}: {e}", super::CONFIG_FILE_NAME))?;
-        serde_json::from_str(&content).map_err(|e| format!("Failed to parse {}: {e}", super::CONFIG_FILE_NAME))?
+        serde_json::from_str(&content)
+            .map_err(|e| format!("Failed to parse {}: {e}", super::CONFIG_FILE_NAME))?
     } else {
         Value::Object(serde_json::Map::new())
     };
@@ -1226,7 +1235,8 @@ pub fn write_pending_application(
     let mut json: Value = if config_path.exists() {
         let content = std::fs::read_to_string(&config_path)
             .map_err(|e| format!("Failed to read {}: {e}", super::CONFIG_FILE_NAME))?;
-        serde_json::from_str(&content).map_err(|e| format!("Failed to parse {}: {e}", super::CONFIG_FILE_NAME))?
+        serde_json::from_str(&content)
+            .map_err(|e| format!("Failed to parse {}: {e}", super::CONFIG_FILE_NAME))?
     } else {
         Value::Object(serde_json::Map::new())
     };

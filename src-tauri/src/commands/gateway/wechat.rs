@@ -626,10 +626,7 @@ impl WeChatGateway {
                             }
 
                             let preview: String = text.chars().take(50).collect();
-                            println!(
-                                "[WeChat] Message from {}: {}...",
-                                sender_id, preview
-                            );
+                            println!("[WeChat] Message from {}: {}...", sender_id, preview);
 
                             // Forward to OpenCode session
                             let gateway = self.clone();
@@ -682,15 +679,10 @@ impl WeChatGateway {
                     qid, answer_text
                 );
                 let _ = self
-                    .send_to_user(
-                        sender_id,
-                        &format!("✓ 已提交：{}", answer_text),
-                    )
+                    .send_to_user(sender_id, &format!("✓ 已提交：{}", answer_text))
                     .await;
             } else {
-                let _ = self
-                    .send_to_user(sender_id, "当前没有待回答的问题。")
-                    .await;
+                let _ = self.send_to_user(sender_id, "当前没有待回答的问题。").await;
             }
             return Ok(());
         }

@@ -86,7 +86,11 @@ pub async fn oss_create_team(
     // Write LLM config to .teamclaw/teamclaw.json
     let llm_config = super::team::build_llm_config(llm_base_url, llm_model, llm_model_name);
     super::team::write_llm_config(&workspace_path, Some(&llm_config))?;
-    info!("oss_create_team: wrote LLM config to {}/{}", super::TEAMCLAW_DIR, super::CONFIG_FILE_NAME);
+    info!(
+        "oss_create_team: wrote LLM config to {}/{}",
+        super::TEAMCLAW_DIR,
+        super::CONFIG_FILE_NAME
+    );
 
     // Scaffold teamclaw-team directory with default structure
     let team_dir = format!("{}/{}", workspace_path, super::TEAM_REPO_DIR);
@@ -217,8 +221,11 @@ pub async fn oss_create_team(
                 "teamSecret": fc_team_secret,
                 "teamName": fc_team_name,
             });
-            match client.post(format!("{}/ai/setup-team", fc_endpoint))
-                .json(&setup_body).send().await
+            match client
+                .post(format!("{}/ai/setup-team", fc_endpoint))
+                .json(&setup_body)
+                .send()
+                .await
             {
                 Ok(r) => tracing::info!("LiteLLM setup-team: status={}", r.status()),
                 Err(e) => tracing::warn!("LiteLLM setup-team failed: {e}"),
@@ -230,8 +237,11 @@ pub async fn oss_create_team(
                 "nodeId": fc_node_id,
                 "memberName": fc_owner_name,
             });
-            match client.post(format!("{}/ai/add-member", fc_endpoint))
-                .json(&member_body).send().await
+            match client
+                .post(format!("{}/ai/add-member", fc_endpoint))
+                .json(&member_body)
+                .send()
+                .await
             {
                 Ok(r) => tracing::info!("LiteLLM add-member (owner): status={}", r.status()),
                 Err(e) => tracing::warn!("LiteLLM add-member (owner) failed: {e}"),
@@ -367,8 +377,11 @@ pub async fn oss_join_team(
                 "teamSecret": fc_team_secret,
                 "nodeId": fc_node_id,
             });
-            match client.post(format!("{}/ai/add-member", fc_endpoint))
-                .json(&body).send().await
+            match client
+                .post(format!("{}/ai/add-member", fc_endpoint))
+                .json(&body)
+                .send()
+                .await
             {
                 Ok(r) => tracing::info!("LiteLLM add-member (join): status={}", r.status()),
                 Err(e) => tracing::warn!("LiteLLM add-member (join) failed: {e}"),
