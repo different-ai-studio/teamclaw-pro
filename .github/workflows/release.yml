@@ -402,7 +402,7 @@ jobs:
           pip3 install ossutil2
 
           VERSION="${{ github.ref_name }}"
-          OSS_BASE="https://$OSS_BUCKET.oss-cn-hangzhou.aliyuncs.com/teamclaw-pro/releases/$VERSION"
+          OSS_BASE="https://teamclaw.ucar.cc/teamclaw-pro/releases/$VERSION"
           NOTES="TeamClaw Pro $VERSION"
           PUB_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
