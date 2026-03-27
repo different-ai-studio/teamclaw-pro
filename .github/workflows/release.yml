@@ -203,6 +203,32 @@ jobs:
           prerelease: false
           args: "--target ${{ matrix.target }}"
 
+      - name: Upload artifacts to Alibaba Cloud OSS
+        env:
+          OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+          OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+          OSS_ENDPOINT: ${{ vars.OSS_ENDPOINT }}
+          OSS_BUCKET: ${{ vars.OSS_BUCKET }}
+        run: |
+          pip3 install ossutil2
+          VERSION="${{ github.ref_name }}"
+          ARTIFACTS_DIR="src-tauri/target/${{ matrix.target }}/release/bundle"
+
+          # Upload DMG
+          for f in "$ARTIFACTS_DIR"/dmg/*.dmg; do
+            [ -f "$f" ] && ossutil2 cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
+          done
+
+          # Upload .tar.gz (macOS updater bundle)
+          for f in "$ARTIFACTS_DIR"/macos/*.tar.gz; do
+            [ -f "$f" ] && ossutil2 cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
+          done
+
+          # Upload .tar.gz.sig (updater signature)
+          for f in "$ARTIFACTS_DIR"/macos/*.tar.gz.sig; do
+            [ -f "$f" ] && ossutil2 cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
+          done
+
   # Windows job uploads artifacts to the same GitHub Release created by macOS job
   release-windows:
     permissions:
@@ -330,3 +356,99 @@ jobs:
           prerelease: false
           # Windows: NSIS installer, no p2p feature (avoids wmi/windows-core conflicts)
           args: "--bundles nsis -- --no-default-features"
+
+      - name: Upload artifacts to Alibaba Cloud OSS
+        env:
+          OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+          OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+          OSS_ENDPOINT: ${{ vars.OSS_ENDPOINT }}
+          OSS_BUCKET: ${{ vars.OSS_BUCKET }}
+        shell: bash
+        run: |
+          pip3 install ossutil2
+          VERSION="${{ github.ref_name }}"
+          ARTIFACTS_DIR="src-tauri/target/release/bundle"
+
+          # Upload NSIS installer
+          for f in "$ARTIFACTS_DIR"/nsis/*.exe; do
+            [ -f "$f" ] && ossutil2 cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
+          done
+
+          # Upload .nsis.zip (Windows updater bundle)
+          for f in "$ARTIFACTS_DIR"/nsis/*.nsis.zip; do
+            [ -f "$f" ] && ossutil2 cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
+          done
+
+          # Upload .nsis.zip.sig (updater signature)
+          for f in "$ARTIFACTS_DIR"/nsis/*.nsis.zip.sig; do
+            [ -f "$f" ] && ossutil2 cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
+          done
+
+  # Generate Tauri updater JSON and upload to OSS
+  upload-updater-json:
+    needs: [release-macos, release-windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate and upload updater JSON
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+          OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+          OSS_ENDPOINT: ${{ vars.OSS_ENDPOINT }}
+          OSS_BUCKET: ${{ vars.OSS_BUCKET }}
+        run: |
+          pip3 install ossutil2
+
+          VERSION="${{ github.ref_name }}"
+          OSS_BASE="https://teamclaw.ucar.cc/teamclaw-pro/releases/$VERSION"
+          NOTES="TeamClaw Pro $VERSION"
+          PUB_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          # Download signature files from the GitHub release
+          mkdir -p /tmp/sigs
+          gh release download "$VERSION" --pattern "*.sig" --dir /tmp/sigs || true
+
+          # Read signatures
+          MAC_AARCH64_SIG=""
+          MAC_X64_SIG=""
+          WIN_SIG=""
+          for f in /tmp/sigs/*aarch64*tar.gz.sig; do [ -f "$f" ] && MAC_AARCH64_SIG=$(cat "$f"); done
+          for f in /tmp/sigs/*x64*tar.gz.sig /tmp/sigs/*x86_64*tar.gz.sig; do [ -f "$f" ] && MAC_X64_SIG=$(cat "$f"); done
+          for f in /tmp/sigs/*nsis.zip.sig; do [ -f "$f" ] && WIN_SIG=$(cat "$f"); done
+
+          # Find artifact filenames from release
+          MAC_AARCH64_FILE=$(gh release view "$VERSION" --json assets -q '.assets[].name' | grep 'aarch64.*tar.gz$' | head -1)
+          MAC_X64_FILE=$(gh release view "$VERSION" --json assets -q '.assets[].name' | grep -E '(x64|x86_64).*tar.gz$' | head -1)
+          WIN_FILE=$(gh release view "$VERSION" --json assets -q '.assets[].name' | grep 'nsis.zip$' | head -1)
+
+          # Build updater JSON
+          cat > /tmp/latest.json <<ENDJSON
+          {
+            "version": "$VERSION",
+            "notes": "$NOTES",
+            "pub_date": "$PUB_DATE",
+            "platforms": {
+              "darwin-aarch64": {
+                "signature": "$MAC_AARCH64_SIG",
+                "url": "$OSS_BASE/$MAC_AARCH64_FILE"
+              },
+              "darwin-x86_64": {
+                "signature": "$MAC_X64_SIG",
+                "url": "$OSS_BASE/$MAC_X64_FILE"
+              },
+              "windows-x86_64": {
+                "signature": "$WIN_SIG",
+                "url": "$OSS_BASE/$WIN_FILE"
+              }
+            }
+          }
+          ENDJSON
+
+          echo "Generated updater JSON:"
+          cat /tmp/latest.json
+
+          # Upload to OSS
+          ossutil2 cp /tmp/latest.json "oss://$OSS_BUCKET/teamclaw-pro/update.json" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
+          echo "Updater JSON uploaded to OSS"
