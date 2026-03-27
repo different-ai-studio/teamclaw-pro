@@ -15,8 +15,6 @@ export interface ShortcutNode {
 
 interface ShortcutsState {
   nodes: ShortcutNode[]
-  teamNodes: ShortcutNode[]
-  teamLoaded: boolean
 
   addNode: (node: Omit<ShortcutNode, 'id'>) => string
   updateNode: (id: string, updates: Partial<ShortcutNode>) => void
@@ -25,9 +23,7 @@ interface ShortcutsState {
   batchMove: (moves: { id: string; parentId: string | null; order: number }[]) => void
   getTree: () => ShortcutNode[]
   getPersonalTree: () => ShortcutNode[]
-  getTeamTree: () => ShortcutNode[]
   getChildren: (parentId: string | null) => ShortcutNode[]
-  setTeamNodes: (nodes: ShortcutNode[]) => void
 }
 
 const STORAGE_KEY = `${appShortName}-shortcuts`
@@ -57,8 +53,6 @@ function buildTree(nodes: ShortcutNode[], parentId: string | null): ShortcutNode
 
 export const useShortcutsStore = create<ShortcutsState>((set, get) => ({
   nodes: loadPersistedNodes(),
-  teamNodes: [],
-  teamLoaded: false,
 
   addNode: (node) => {
     const id = generateId()
@@ -125,20 +119,13 @@ export const useShortcutsStore = create<ShortcutsState>((set, get) => ({
   },
 
   getTree: () => {
-    const { nodes, teamNodes } = get()
-    const personalTree = buildTree(nodes, null)
-    const teamTree = buildTree(teamNodes, null)
-    return [...personalTree, ...teamTree]
+    const { nodes } = get()
+    return buildTree(nodes, null)
   },
 
   getPersonalTree: () => {
     const { nodes } = get()
     return buildTree(nodes, null)
-  },
-
-  getTeamTree: () => {
-    const { teamNodes } = get()
-    return buildTree(teamNodes, null)
   },
 
   getChildren: (parentId) => {
@@ -148,7 +135,4 @@ export const useShortcutsStore = create<ShortcutsState>((set, get) => ({
       .sort((a, b) => a.order - b.order)
   },
 
-  setTeamNodes: (nodes) => {
-    set({ teamNodes: nodes, teamLoaded: true })
-  },
 }))

@@ -12,8 +12,7 @@ import { useWorkspaceStore } from "@/stores/workspace";
 import { useProviderStore, getSelectedModelOption } from "@/stores/provider";
 import { useTeamModeStore } from "@/stores/team-mode";
 import { useSuggestionsStore } from "@/stores/suggestions";
-import { useShortcutsStore } from "@/stores/shortcuts";
-import { TEAMCLAW_DIR, CONFIG_FILE_NAME, TEAM_REPO_DIR } from "@/lib/build-config";
+import { TEAMCLAW_DIR, CONFIG_FILE_NAME } from "@/lib/build-config";
 import type { PromptInputMessage } from "@/packages/ai/prompt-input";
 import type { SendMessageFilePart } from "@/lib/opencode/types";
 import { Suggestions, Suggestion } from "@/packages/ai/suggestion";
@@ -238,35 +237,6 @@ export function ChatPanel({ compact = false }: ChatPanelProps) {
     window.addEventListener(SKILLS_CHANGED_EVENT, onSkillsChanged);
     return () => window.removeEventListener(SKILLS_CHANGED_EVENT, onSkillsChanged);
   }, []);
-
-  // ── Team shortcuts hot reload via file watcher ─────────────────────────
-  React.useEffect(() => {
-    if (!openCodeReady || !workspacePath) return;
-    const isTauriEnv = isTauri();
-    if (!isTauriEnv) return;
-
-    let unlisten: (() => void) | null = null;
-    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-
-    (async () => {
-      const { listen } = await import('@tauri-apps/api/event');
-      unlisten = await listen<{ path: string; kind: string }>('file-change', (event) => {
-        if (!event.payload.path.includes(`${TEAM_REPO_DIR}/.shortcuts.json`)) return;
-        if (debounceTimer) clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(async () => {
-          console.log('[TeamShortcuts] .shortcuts.json changed, reloading');
-          const { loadTeamShortcutsFile } = await import('@/lib/team-shortcuts');
-          const nodes = await loadTeamShortcutsFile(workspacePath);
-          useShortcutsStore.getState().setTeamNodes(nodes || []);
-        }, 500);
-      });
-    })();
-
-    return () => {
-      if (unlisten) unlisten();
-      if (debounceTimer) clearTimeout(debounceTimer);
-    };
-  }, [openCodeReady, workspacePath]);
 
   // Sync selected model to session store
   React.useEffect(() => {

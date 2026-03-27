@@ -10,7 +10,7 @@ import { useShortcutsStore } from '@/stores/shortcuts'
 describe('shortcuts store', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    useShortcutsStore.setState({ nodes: [], teamNodes: [], teamLoaded: false })
+    useShortcutsStore.setState({ nodes: [] })
   })
 
   it('starts with empty nodes', () => {
@@ -85,42 +85,12 @@ describe('shortcuts store', () => {
     expect(tree[0].children![0].label).toBe('Link')
   })
 
-  it('getPersonalTree returns only personal shortcuts', () => {
+  it('getPersonalTree returns personal shortcuts', () => {
     useShortcutsStore.setState({
       nodes: [{ id: 'personal-1', label: 'P', order: 0, parentId: null, type: 'link', target: 'https://p.com' }],
-      teamNodes: [{ id: 'team-1', label: 'T', order: 0, parentId: null, type: 'link', target: 'https://t.com' }],
     })
     const tree = useShortcutsStore.getState().getPersonalTree()
     expect(tree).toHaveLength(1)
     expect(tree[0].id).toBe('personal-1')
-  })
-
-  it('getTeamTree returns only team shortcuts', () => {
-    useShortcutsStore.setState({
-      nodes: [{ id: 'personal-1', label: 'P', order: 0, parentId: null, type: 'link', target: 'https://p.com' }],
-      teamNodes: [{ id: 'team-1', label: 'T', order: 0, parentId: null, type: 'link', target: 'https://t.com' }],
-    })
-    const tree = useShortcutsStore.getState().getTeamTree()
-    expect(tree).toHaveLength(1)
-    expect(tree[0].id).toBe('team-1')
-  })
-
-  it('getTree returns merged tree with personal first', () => {
-    useShortcutsStore.setState({
-      nodes: [{ id: 'personal-1', label: 'P', order: 0, parentId: null, type: 'link', target: 'https://p.com' }],
-      teamNodes: [{ id: 'team-1', label: 'T', order: 0, parentId: null, type: 'link', target: 'https://t.com' }],
-    })
-    const tree = useShortcutsStore.getState().getTree()
-    expect(tree).toHaveLength(2)
-    expect(tree[0].id).toBe('personal-1')
-    expect(tree[1].id).toBe('team-1')
-  })
-
-  it('setTeamNodes updates team shortcuts', () => {
-    useShortcutsStore.getState().setTeamNodes([
-      { id: 'team-1', label: 'Team', order: 0, parentId: null, type: 'link', target: 'https://team.com' }
-    ])
-    expect(useShortcutsStore.getState().teamNodes).toHaveLength(1)
-    expect(useShortcutsStore.getState().teamLoaded).toBe(true)
   })
 })

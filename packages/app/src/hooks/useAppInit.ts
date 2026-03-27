@@ -19,7 +19,6 @@ import { useUIStore } from "@/stores/ui";
 import { useDepsStore, getSetupDecision, markSetupCompleted } from "@/stores/deps";
 import { useTelemetryStore } from "@/stores/telemetry";
 import { useTeamOssStore } from "@/stores/team-oss";
-import { useShortcutsStore } from "@/stores/shortcuts";
 import { useCronStore } from "@/stores/cron";
 import { initOpenCodeClient } from "@/lib/opencode/client";
 import {
@@ -399,17 +398,7 @@ export function useGitReposInit() {
             // Tauri not available, skip
           });
 
-        // Load team shortcuts after team config
-        import("@/lib/team-shortcuts")
-          .then(({ loadTeamShortcutsFile }) => {
-            return loadTeamShortcutsFile(workspacePath);
-          })
-          .then((teamShortcuts) => {
-            useShortcutsStore.getState().setTeamNodes(teamShortcuts || []);
-          })
-          .catch((err: unknown) => {
-            console.warn("[App] Failed to load team shortcuts (non-critical):", err);
-          });
+
       }
     }
 

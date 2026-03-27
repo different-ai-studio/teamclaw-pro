@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from "react"
 import { useTranslation } from "react-i18next"
-import { ChevronRight, ChevronDown, Plus, FileText, ExternalLink, Folder, RefreshCw, Settings } from "lucide-react"
+import { ChevronRight, ChevronDown, Plus, FileText, ExternalLink, Folder, Settings } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -14,7 +14,6 @@ import { useShortcutsStore, ShortcutNode } from "@/stores/shortcuts"
 import { useTabsStore, selectActiveTab } from "@/stores/tabs"
 import { useUIStore } from "@/stores/ui"
 import { useWorkspaceStore } from "@/stores/workspace"
-import { loadTeamShortcutsFile } from "@/lib/team-shortcuts"
 import { useSidebar } from "@/components/ui/sidebar"
 import { isWorkspaceUIVariant } from "@/lib/ui-variant"
 
@@ -105,10 +104,9 @@ function TreeNode({ node, level, onSelect, activeTarget, openTargets }: TreeNode
 interface SectionHeaderProps {
   label: string
   onConfigure?: () => void
-  onRefresh?: () => void
 }
 
-function SectionHeader({ label, onConfigure, onRefresh }: SectionHeaderProps) {
+function SectionHeader({ label, onConfigure }: SectionHeaderProps) {
   const { t } = useTranslation()
 
   return (
@@ -119,12 +117,6 @@ function SectionHeader({ label, onConfigure, onRefresh }: SectionHeaderProps) {
         </div>
       </ContextMenuTrigger>
       <ContextMenuContent>
-        {onRefresh && (
-          <ContextMenuItem onClick={onRefresh}>
-            <RefreshCw className="h-3.5 w-3.5 mr-2" />
-            {t("shortcuts.refreshTeam", "Refresh Team Shortcuts")}
-          </ContextMenuItem>
-        )}
         {onConfigure && (
           <ContextMenuItem onClick={onConfigure}>
             <Settings className="h-3.5 w-3.5 mr-2" />
@@ -138,7 +130,7 @@ function SectionHeader({ label, onConfigure, onRefresh }: SectionHeaderProps) {
 
 export function ShortcutsPanel() {
   const { t } = useTranslation()
-  const { getPersonalTree, getTeamTree, setTeamNodes } = useShortcutsStore()
+  const { getPersonalTree } = useShortcutsStore()
   const openSettings = useUIStore((s) => s.openSettings)
   const { setOpen: setSidebarOpen } = useSidebar()
   const isPanelOpen = useWorkspaceStore((s) => s.isPanelOpen)
@@ -146,10 +138,8 @@ export function ShortcutsPanel() {
   const closePanel = useWorkspaceStore((s) => s.closePanel)
   const activeTab = useTabsStore(selectActiveTab)
   const tabs = useTabsStore((s) => s.tabs)
-  const workspacePath = useWorkspaceStore((s) => s.workspacePath)
   const openTargets = useMemo(() => new Set(tabs.map((t) => t.target)), [tabs])
   const personalTree = getPersonalTree()
-  const teamTree = getTeamTree()
 
   const activeTarget = activeTab?.target ?? null
 
@@ -188,14 +178,6 @@ export function ShortcutsPanel() {
     })
   }
 
-  const handleRefreshTeam = async () => {
-    if (!workspacePath) return
-    const nodes = await loadTeamShortcutsFile(workspacePath)
-    if (nodes) {
-      setTeamNodes(nodes)
-    }
-  }
-
   return (
     <div className="flex flex-col h-full">
       <ScrollArea className="flex-1">
@@ -231,25 +213,6 @@ export function ShortcutsPanel() {
             ))
           )}
 
-          {teamTree.length > 0 && (
-            <>
-              <SectionHeader
-                label={t("shortcuts.team", "TEAM")}
-                onConfigure={openPersonalShortcutsSettings}
-                onRefresh={handleRefreshTeam}
-              />
-              {teamTree.map((node) => (
-                <TreeNode
-                  key={node.id}
-                  node={node}
-                  level={0}
-                  onSelect={handleSelectNode}
-                  activeTarget={activeTarget}
-                  openTargets={openTargets}
-                />
-              ))}
-            </>
-          )}
         </div>
       </ScrollArea>
     </div>
