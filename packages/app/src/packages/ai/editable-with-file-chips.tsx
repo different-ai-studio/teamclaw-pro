@@ -260,7 +260,6 @@ export const EditableWithFileChips = React.forwardRef<HTMLDivElement, EditableWi
             
             // CRITICAL: Record position info BEFORE deleting
             const parent = chipToDelete.parentNode as HTMLElement
-            const prevSibling = chipToDelete.previousSibling
             let nextSibling = chipToDelete.nextSibling
             
             // Delete the chip
@@ -374,12 +373,10 @@ export const EditableWithFileChips = React.forwardRef<HTMLDivElement, EditableWi
               chip.remove()
 
               if (parent) {
-                let targetNode: Node | null = null
-                let targetOffset = 0
+                let targetNode: Node
 
                 if (nextSibling && nextSibling.nodeType === Node.TEXT_NODE) {
                   targetNode = nextSibling
-                  targetOffset = 0
                 } else {
                   const textNode = document.createTextNode('')
                   if (nextSibling) {
@@ -388,10 +385,9 @@ export const EditableWithFileChips = React.forwardRef<HTMLDivElement, EditableWi
                     parent.appendChild(textNode)
                   }
                   targetNode = textNode
-                  targetOffset = 0
                 }
 
-                pendingCursorPositionRef.current = { node: targetNode, offset: targetOffset }
+                pendingCursorPositionRef.current = { node: targetNode, offset: 0 }
               }
 
               // Trigger input event to sync value
