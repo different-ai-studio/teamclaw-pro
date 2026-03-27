@@ -171,8 +171,8 @@ importers:
         specifier: ^3.19.0
         version: 3.20.5(@tiptap/core@3.20.5(@tiptap/pm@3.20.5))
       '@tiptap/markdown':
-        specifier: ^3.19.0
-        version: 3.20.5(@tiptap/core@3.20.5(@tiptap/pm@3.20.5))(@tiptap/pm@3.20.5)
+        specifier: ^3.20.6
+        version: 3.20.6(@tiptap/core@3.20.5(@tiptap/pm@3.20.5))(@tiptap/pm@3.20.5)
       '@tiptap/pm':
         specifier: ^3.19.0
         version: 3.20.5
@@ -2542,11 +2542,11 @@ packages:
       '@tiptap/core': ^3.20.5
       '@tiptap/pm': ^3.20.5
 
-  '@tiptap/markdown@3.20.5':
-    resolution: {integrity: sha512-meSibJEeCrh6kPJbdXUNnwexZEgdxWDRu7YzPml8TCy+Djo+g50YwzOfY5bfTYs7/mwGANJ7Y8OnWcnwT2IbzQ==}
+  '@tiptap/markdown@3.20.6':
+    resolution: {integrity: sha512-j+jG+Zll/Ql+EX61RUzwDVTqAR+RqqtbV/w5GVBb6WN2XU1vJStGqMlGr+PlA7GCRdO4Dmq3yGP7780wBBt8Yw==}
     peerDependencies:
-      '@tiptap/core': ^3.20.5
-      '@tiptap/pm': ^3.20.5
+      '@tiptap/core': ^3.20.6
+      '@tiptap/pm': ^3.20.6
 
   '@tiptap/pm@3.20.5':
     resolution: {integrity: sha512-yJhDa7Chx2EqJMX/jlewBv0za7slf1dKHWYve1XaApuVHEkxl0Ul3EDbwnx316vIITkuFW/pWSwkSsAplyBeCw==}
@@ -7422,7 +7422,7 @@ snapshots:
       '@tiptap/core': 3.20.5(@tiptap/pm@3.20.5)
       '@tiptap/pm': 3.20.5
 
-  '@tiptap/markdown@3.20.5(@tiptap/core@3.20.5(@tiptap/pm@3.20.5))(@tiptap/pm@3.20.5)':
+  '@tiptap/markdown@3.20.6(@tiptap/core@3.20.5(@tiptap/pm@3.20.5))(@tiptap/pm@3.20.5)':
     dependencies:
       '@tiptap/core': 3.20.5(@tiptap/pm@3.20.5)
       '@tiptap/pm': 3.20.5
