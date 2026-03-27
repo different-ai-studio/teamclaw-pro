@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import type { SettingsSection } from '@/stores/ui'
+import { getPlugins } from '@/plugins/registry'
 import { LLMSection } from './LLMSection'
 import { GeneralSection } from './GeneralSection'
 import { PromptSection } from './PromptSection'
@@ -8,7 +9,6 @@ import { MCPSection } from './MCPSection'
 import { SkillsSection } from './SkillsSection'
 import { ChannelsSection } from './ChannelsSection'
 import { DependenciesSection } from './DependenciesSection'
-import { TeamSection } from './TeamSection'
 import { CronSection } from './CronSection'
 import { EnvVarsSection } from './EnvVarsSection'
 import { TokenUsageSection } from './TokenUsageSection'
@@ -19,7 +19,7 @@ import { VoiceSection } from './VoiceSection'
 import { LeaderboardSection } from './LeaderboardSection'
 import { ShortcutsSection } from '@/components/shortcuts/ShortcutsSection'
 
-export const SETTINGS_SECTION_COMPONENTS: Record<SettingsSection, React.ComponentType> = {
+const CORE_SECTION_COMPONENTS: Record<string, React.ComponentType> = {
   llm: LLMSection,
   general: GeneralSection,
   voice: VoiceSection,
@@ -27,7 +27,6 @@ export const SETTINGS_SECTION_COMPONENTS: Record<SettingsSection, React.Componen
   mcp: MCPSection,
   channels: ChannelsSection,
   automation: CronSection,
-  team: TeamSection,
   envVars: EnvVarsSection,
   skills: SkillsSection,
   knowledge: KnowledgeSection,
@@ -39,8 +38,18 @@ export const SETTINGS_SECTION_COMPONENTS: Record<SettingsSection, React.Componen
   shortcuts: ShortcutsSection,
 }
 
+export function getSectionComponent(id: string): React.ComponentType | undefined {
+  if (CORE_SECTION_COMPONENTS[id]) return CORE_SECTION_COMPONENTS[id]
+  for (const plugin of getPlugins()) {
+    const section = plugin.settingsSections?.find(s => s.id === id)
+    if (section) return section.component
+  }
+  return undefined
+}
+
 export function SettingsSectionBody({ section }: { section: SettingsSection }) {
-  const Component = SETTINGS_SECTION_COMPONENTS[section]
+  const Component = getSectionComponent(section)
+  if (!Component) return null
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-muted/5">
       <ScrollArea className="h-full min-h-0 flex-1">
