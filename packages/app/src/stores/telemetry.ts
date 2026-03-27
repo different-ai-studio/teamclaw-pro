@@ -1,4 +1,5 @@
 import { appShortName } from '@/lib/build-config'
+import { getPlugins } from '@/plugins/registry'
 import { create } from 'zustand'
 import type {
   TelemetryConsent,
@@ -13,6 +14,10 @@ import { isTauri } from '@/lib/utils'
 import type { Message as OpenCodeMessage } from '@/lib/opencode/types'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────
+
+function notifyPlugins(event: string) {
+  getPlugins().forEach(p => p.onTelemetryEvent?.(event))
+}
 
 async function invoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
   const { invoke: tauriInvoke } = await import('@tauri-apps/api/core')
@@ -58,11 +63,6 @@ interface TelemetryState {
 const scoringEngine = new ScoringEngine()
 const idleTimers = new Map<string, ReturnType<typeof setTimeout>>()
 const scoredSessions = new Set<string>()
-
-const TEAM_EXPORT_DEBOUNCE_MS = 5 * 60 * 1000 // 5 min
-let teamExportTimerId: ReturnType<typeof setTimeout> | null = null
-let lastTeamExportAt = 0
-
 
 /**
  * Ensure a session's messages are loaded before building session report.
@@ -192,7 +192,7 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
       get().handleSessionIdle(sessionId)
 
       // Schedule team data export after feedback change
-      scheduleTeamFeedbackExport()
+      notifyPlugins('feedback-changed')
 
       // Update local stats
       const { useWorkspaceStore } = await import('@/stores/workspace')
@@ -222,7 +222,7 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
       get().handleSessionIdle(sessionId)
 
       // Schedule team data export after feedback removal
-      scheduleTeamFeedbackExport()
+      notifyPlugins('feedback-changed')
     } catch (err) {
       console.error('[telemetry] Failed to remove feedback:', err)
     }
@@ -277,7 +277,7 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
       get().handleSessionIdle(sessionId)
 
       // Schedule team data export after star rating change
-      scheduleTeamFeedbackExport()
+      notifyPlugins('feedback-changed')
 
       // Update local stats
       const { useWorkspaceStore } = await import('@/stores/workspace')
@@ -307,7 +307,7 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
       get().handleSessionIdle(sessionId)
 
       // Schedule team data export after star rating removal
-      scheduleTeamFeedbackExport()
+      notifyPlugins('feedback-changed')
     } catch (err) {
       console.error('[telemetry] Failed to remove star rating:', err)
     }
@@ -365,7 +365,7 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
         await invoke('telemetry_save_report', { report: cleanReport })
         console.log(`[telemetry] Scored session ${sessionId}:`, scores.length, 'scores')
 
-        scheduleTeamFeedbackExport()
+        notifyPlugins('feedback-changed')
 
         // Update local stats: task completed and session count
         // Note: Token usage is now tracked per message in handleMessageCompleted
@@ -483,7 +483,7 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
 
       // Export team data after generating reports
       if (successCount > 0) {
-        scheduleTeamFeedbackExport()
+        notifyPlugins('feedback-changed')
       }
     } catch (err) {
       console.error('[telemetry] Failed to generate session reports:', err)
@@ -493,7 +493,7 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
   },
 
   exportTeamData: (force?: boolean) => {
-    scheduleTeamFeedbackExport(force)
+    notifyPlugins(force ? 'feedback-export-forced' : 'feedback-changed')
   },
 
   destroy: () => {
@@ -502,10 +502,6 @@ export const useTelemetryStore = create<TelemetryState>((set, get) => ({
     }
     idleTimers.clear()
     scoredSessions.clear()
-    if (teamExportTimerId) {
-      clearTimeout(teamExportTimerId)
-      teamExportTimerId = null
-    }
   },
 }))
 
@@ -519,43 +515,3 @@ if (typeof window !== 'undefined') {
   (window as any)[`__${appShortName.toUpperCase()}_TELEMETRY__`] = useTelemetryStore.getState()
 }
 
-// ─── Team Feedback & Leaderboard Export ──────────────────────────────────
-
-function scheduleTeamFeedbackExport(force: boolean = false) {
-  if (!isTauri()) return
-
-  const now = Date.now()
-  const elapsed = now - lastTeamExportAt
-  if (!force && elapsed < TEAM_EXPORT_DEBOUNCE_MS && teamExportTimerId) return
-
-  if (teamExportTimerId) {
-    clearTimeout(teamExportTimerId)
-  }
-
-  const delay = force ? 1000 : (elapsed >= TEAM_EXPORT_DEBOUNCE_MS ? 3000 : TEAM_EXPORT_DEBOUNCE_MS - elapsed)
-  teamExportTimerId = setTimeout(async () => {
-    teamExportTimerId = null
-    try {
-      console.log('[telemetry] Exporting team data from .teamclaw/stats.json')
-      
-      // Export both feedback and leaderboard data
-      // Note: leaderboard now reads from .teamclaw/stats.json directly
-      await Promise.all([
-        invoke('telemetry_export_team_feedback', {}),
-        invoke('telemetry_export_leaderboard', {}),
-      ])
-      lastTeamExportAt = Date.now()
-      console.log('[telemetry] Exported team feedback & leaderboard')
-    } catch (err) {
-      console.error('[telemetry] Failed to export team data:', err)
-    }
-  }, delay)
-}
-
-/**
- * Trigger team leaderboard export (with debouncing)
- * Call this after updating .teamclaw/stats.json to sync changes to team leaderboard
- */
-export function triggerTeamLeaderboardExport() {
-  scheduleTeamFeedbackExport()
-}

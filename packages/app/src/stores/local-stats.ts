@@ -143,11 +143,11 @@ export const useLocalStatsStore = create<LocalStatsStore>((set, get) => ({
     
     // Auto-trigger team leaderboard export after local stats update
     try {
-      const { triggerTeamLeaderboardExport } = await import('./telemetry')
-      triggerTeamLeaderboardExport()
+      const { getPlugins } = await import('@/plugins/registry')
+      getPlugins().forEach(p => p.onTelemetryEvent?.('feedback-changed'))
     } catch (err) {
-      // Silently fail if telemetry is not available (e.g., web mode or no P2P)
-      console.debug('[LocalStats] Could not trigger team leaderboard export:', err)
+      // Silently fail if plugins are not available (e.g., web mode or no P2P)
+      console.debug('[LocalStats] Could not notify plugins of stats update:', err)
     }
   },
 }))
