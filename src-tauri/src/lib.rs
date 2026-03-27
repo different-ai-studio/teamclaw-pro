@@ -38,6 +38,7 @@ use tauri_plugin_aptabase::EventTracker;
 use tauri_plugin_global_shortcut::{Code, Modifiers, ShortcutState};
 
 mod commands;
+mod plugins;
 mod rag;
 pub mod sentry_utils;
 mod stt;
@@ -189,7 +190,7 @@ pub fn run() {
     // RAG state for Tauri commands (MCP bridge uses standalone rag-mcp-server; see binaries README)
     let rag_state = commands::knowledge::RagState::default();
 
-    tauri::Builder::default()
+    let builder = tauri::Builder::default()
         .plugin(tauri_plugin_log::Builder::new()
             .level(log::LevelFilter::Info)
             .filter(|metadata| {
@@ -534,7 +535,11 @@ pub fn run() {
             commands::team_unified::unified_team_remove_member,
             commands::team_unified::unified_team_update_member_role,
             commands::team_unified::unified_team_get_my_role,
-        ])
+        ]);
+
+    let builder = plugins::register_all(builder);
+
+    builder
         .setup(|app| {
             #[cfg(debug_assertions)]
             let setup_t0 = std::time::Instant::now();
