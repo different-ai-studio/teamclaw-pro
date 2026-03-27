@@ -61,7 +61,7 @@ vi.mock('@/stores/team-mode', () => ({
 
 vi.mock('@/stores/ui', () => ({
   useUIStore: (selector: (s: unknown) => unknown) =>
-    selector({ advancedMode: true }),
+    selector({ advancedMode: true, devUnlocked: true }),
 }));
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
