@@ -433,9 +433,13 @@ export function ChatPanel({ compact = false }: ChatPanelProps) {
     setImageFiles([]);
   };
 
-  const handleSuggestionClick = (suggestion: string) => {
-    setInputValue(suggestion);
-  };
+  const handleSuggestionClick = React.useCallback(
+    (suggestion: string) => {
+      // Keep all quick suggestions visually consistent with slash skill selection.
+      setInputValue(`/{${suggestion}} `);
+    },
+    [setInputValue],
+  );
 
   // ── Empty state with suggestions ──────────────────────────────────────
   const emptyState = React.useMemo(() => (
@@ -475,7 +479,7 @@ export function ChatPanel({ compact = false }: ChatPanelProps) {
         </Suggestions>
       )}
     </div>
-  ), [compact, t, suggestions]);
+  ), [compact, t, suggestions, handleSuggestionClick]);
 
   // ── Render ────────────────────────────────────────────────────────────
 
