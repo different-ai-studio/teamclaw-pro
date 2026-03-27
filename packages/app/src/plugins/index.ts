@@ -1,5 +1,5 @@
-// packages/app/src/plugins/index.ts
+import './team'
+
 export function loadPlugins() {
-  // Open-source: no plugins registered
-  // Pro repo overrides this file to import plugin modules
+  // Team plugin self-registers via side-effect import above
 }
