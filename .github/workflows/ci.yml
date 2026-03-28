@@ -44,7 +44,9 @@ jobs:
 
       # 3. Configure git for private plugin repo access
       - name: Configure git for private plugin
-        run: git config --global url."https://x-access-token:${{ secrets.PAT }}@github.com/".insteadOf "ssh://git@github.com/"
+        run: |
+          git config --global url."https://x-access-token:${{ secrets.PAT }}@github.com/".insteadOf "ssh://git@github.com/"
+          git config --global url."https://x-access-token:${{ secrets.PAT }}@github.com/".insteadOf "https://github.com/"
 
       - name: Install dependencies + Pro plugin
         run: |
