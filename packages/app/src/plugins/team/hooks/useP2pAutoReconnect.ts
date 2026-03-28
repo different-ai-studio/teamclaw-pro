@@ -11,7 +11,7 @@ export function useP2pAutoReconnect() {
 
     const timer = setTimeout(async () => {
       try {
-        const { useTeamModeStore } = await import('@/stores/team-mode')
+        const { useTeamModeStore } = await import('../stores/team-mode')
         if (!useTeamModeStore.getState().teamMode) return
 
         const { invoke } = await import('@tauri-apps/api/core')

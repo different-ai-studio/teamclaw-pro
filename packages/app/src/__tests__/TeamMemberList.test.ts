@@ -48,7 +48,7 @@ beforeEach(async () => {
   vi.clearAllMocks()
   cleanup()
   // Reset store state between tests
-  const { useTeamMembersStore } = await import('@/stores/team-members')
+  const { useTeamMembersStore } = await import('@/plugins/team/stores/team-members')
   useTeamMembersStore.setState({
     members: [],
     myRole: null,

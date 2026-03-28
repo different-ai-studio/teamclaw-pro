@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useWorkspaceStore } from '@/stores/workspace'
-import { useTeamOssStore } from '@/stores/team-oss'
+import { useTeamOssStore } from '../stores/team-oss'
 import { isTauri } from '@/lib/utils'
 
 export function useOssSyncInit() {

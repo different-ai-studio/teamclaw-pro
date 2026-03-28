@@ -76,7 +76,7 @@ vi.mock('@/stores/provider', () => ({
   getSelectedModelOption: () => null,
 }));
 
-vi.mock('@/stores/team-mode', () => ({
+vi.mock('@/plugins/team/stores/team-mode', () => ({
   useTeamModeStore: Object.assign(
     (selector: (s: unknown) => unknown) =>
       selector({ teamMode: false }),

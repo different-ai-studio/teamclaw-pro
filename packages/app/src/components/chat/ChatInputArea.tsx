@@ -18,7 +18,7 @@ import {
 import { FileMentionPopover } from "./FileMentionPopover";
 import { CommandPopover } from "./CommandPopover";
 import type { Command as OpenCodeCommand } from "@/lib/opencode/client";
-import { useTeamModeStore } from "@/stores/team-mode";
+import { useTeamModeStore } from "@/plugins/team/stores/team-mode";
 import {
   ModelSelector,
   ModelSelectorTrigger,

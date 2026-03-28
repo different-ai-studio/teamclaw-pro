@@ -54,7 +54,7 @@ vi.mock('@/stores/session', () => {
   return { useSessionStore: store };
 });
 
-vi.mock('@/stores/team-mode', () => ({
+vi.mock('@/plugins/team/stores/team-mode', () => ({
   useTeamModeStore: (selector: (s: unknown) => unknown) =>
     selector({ teamMode: false, devUnlocked: true }),
 }));

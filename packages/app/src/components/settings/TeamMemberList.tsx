@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { UserMinus, Shield, Pencil, Eye, UserPlus, Clock, UserCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useTeamMembersStore } from '../../stores/team-members'
+import { useTeamMembersStore } from '@/plugins/team/stores/team-members'
 import { AddMemberInput } from './AddMemberInput'
 
 function truncateId(id: string): string {

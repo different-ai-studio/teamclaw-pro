@@ -9,8 +9,8 @@ import { GitStatus } from "@/lib/git/service";
 import { useWorkspaceStore, type FileNode } from "@/stores/workspace";
 import { useGitStatus } from "@/hooks/use-git-status";
 import { useGitSettingsStore } from "@/stores/git-settings";
-import { useTeamOssStore } from "@/stores/team-oss";
-import { useTeamModeStore } from "@/stores/team-mode";
+import { useTeamOssStore } from "@/plugins/team/stores/team-oss";
+import { useTeamModeStore } from "@/plugins/team/stores/team-mode";
 import {
   AlertDialog,
   AlertDialogAction,

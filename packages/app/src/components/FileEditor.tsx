@@ -31,7 +31,7 @@ import { ConflictBanner } from "@/components/editors/ConflictBanner";
 import { useSessionStore } from "@/stores/session";
 import { useUIStore } from "@/stores/ui";
 import { useWorkspaceStore } from "@/stores/workspace";
-import { useTeamModeStore } from "@/stores/team-mode";
+import { useTeamModeStore } from "@/plugins/team/stores/team-mode";
 import { useGitStatus } from "@/hooks/use-git-status";
 import { gitManager } from "@/lib/git/manager";
 import { Button } from "@/components/ui/button";

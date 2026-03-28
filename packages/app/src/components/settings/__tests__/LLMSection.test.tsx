@@ -31,7 +31,7 @@ vi.mock('@/stores/workspace', () => ({
     return sel(state)
   }),
 }))
-vi.mock('@/stores/team-mode', () => ({
+vi.mock('@/plugins/team/stores/team-mode', () => ({
   useTeamModeStore: vi.fn((sel: (s: any) => any) => {
     const state = { teamMode: false, teamModelConfig: null }
     return sel(state)

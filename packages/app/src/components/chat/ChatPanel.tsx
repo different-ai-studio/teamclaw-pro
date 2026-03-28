@@ -10,7 +10,7 @@ import { useStreamingStore } from "@/stores/streaming";
 import { useVoiceInputStore } from "@/stores/voice-input";
 import { useWorkspaceStore } from "@/stores/workspace";
 import { useProviderStore, getSelectedModelOption } from "@/stores/provider";
-import { useTeamModeStore } from "@/stores/team-mode";
+import { useTeamModeStore } from "@/plugins/team/stores/team-mode";
 import { useSuggestionsStore } from "@/stores/suggestions";
 import { TEAMCLAW_DIR, CONFIG_FILE_NAME } from "@/lib/build-config";
 import type { PromptInputMessage } from "@/packages/ai/prompt-input";

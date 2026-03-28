@@ -22,7 +22,7 @@ import {
 
 import { cn } from '@/lib/utils';
 import { TEAM_REPO_DIR } from '@/lib/build-config';
-import { useTeamModeStore } from '@/stores/team-mode';
+import { useTeamModeStore } from '@/plugins/team/stores/team-mode';
 import { useTabsStore } from '@/stores/tabs';
 import { getFileIcon } from '@/lib/file-icons';
 import { getGitStatusIndicator, getGitStatusTextColor } from '@/lib/git-status-utils';
