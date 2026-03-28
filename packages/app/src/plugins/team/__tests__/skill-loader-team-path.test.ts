@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import { TEAM_REPO_DIR } from "@/lib/build-config"
-import { loadAllSkills, getSourceDirHint } from "../skill-loader"
+import { loadAllSkills, getSourceDirHint } from "@/lib/git/skill-loader"
 
 const mockExists = vi.fn()
 const mockReadDir = vi.fn()
