@@ -151,7 +151,7 @@ jobs:
           # 1) Install Pro plugin → pnpm install → frontend build (sequential chain, backgrounded)
           (
             set -e
-            pnpm add @teamclaw/plugin-team@"${{ secrets.PLUGIN_REPO_URL }}"
+            pnpm add @teamclaw/plugin-team@"https://x-access-token:${{ secrets.PAT }}@github.com/${{ secrets.PLUGIN_REPO }}/tarball/main"
             pnpm install
             echo "pnpm install done, building frontend..."
             BUILD_ENV=production pnpm --filter @teamclaw/app build
@@ -365,7 +365,7 @@ jobs:
         env:
           BUILD_ENV: production
         run: |
-          pnpm add @teamclaw/plugin-team@"${{ secrets.PLUGIN_REPO_URL }}"
+          pnpm add @teamclaw/plugin-team@"https://x-access-token:${{ secrets.PAT }}@github.com/${{ secrets.PLUGIN_REPO }}/tarball/main"
           pnpm install
           pnpm --filter @teamclaw/app build
 

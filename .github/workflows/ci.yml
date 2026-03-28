@@ -50,7 +50,7 @@ jobs:
 
       - name: Install dependencies + Pro plugin
         run: |
-          pnpm add @teamclaw/plugin-team@"${{ secrets.PLUGIN_REPO_URL }}"
+          pnpm add @teamclaw/plugin-team@"https://x-access-token:${{ secrets.PAT }}@github.com/${{ secrets.PLUGIN_REPO }}/tarball/main"
           pnpm install
 
       - name: TypeScript check
