@@ -10,9 +10,13 @@ name = "teamclaw_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [features]
-default = ["p2p"]
+default = ["team", "p2p"]
+# Team collaboration features (sync, P2P, WebDAV, OSS, versioning).
+# Open-source builds omit this feature; Pro builds enable it.
+team = []
 # P2P team sync (iroh); disabled on Windows to avoid wmi/windows-core version conflict.
-p2p = ["dep:iroh", "dep:iroh-blobs", "dep:iroh-docs", "dep:iroh-gossip"]
+# Requires the "team" feature.
+p2p = ["team", "dep:iroh", "dep:iroh-blobs", "dep:iroh-docs", "dep:iroh-gossip"]
 stt-whisper = ["dep:whisper-rs"]
 
 [build-dependencies]

@@ -9,22 +9,32 @@ pub mod knowledge;
 pub mod local_stats;
 pub mod mcp;
 pub mod opencode;
+#[cfg(feature = "team")]
 pub mod oss_commands;
+#[cfg(feature = "team")]
 pub mod oss_sync;
+#[cfg(feature = "team")]
 pub mod oss_types;
+#[cfg(feature = "team")]
 pub mod p2p_state;
 pub mod rag_http_server;
 pub mod skillssh;
 pub mod spotlight;
 pub mod stt;
+#[cfg(feature = "team")]
 pub mod team;
 #[cfg(feature = "p2p")]
 pub mod team_p2p;
+#[cfg(feature = "team")]
 pub mod team_unified;
+#[cfg(feature = "team")]
 pub mod team_webdav;
 pub mod updater;
+#[cfg(feature = "team")]
 pub mod version_commands;
+#[cfg(feature = "team")]
 pub mod version_store;
+#[cfg(feature = "team")]
 pub mod version_types;
 pub mod webview;
 
@@ -34,6 +44,7 @@ pub const APP_SHORT_NAME: &str = env!("APP_SHORT_NAME");
 /// Directory name for all TeamClaw local config/data files, created under the workspace root.
 pub const TEAMCLAW_DIR: &str = concat!(".", env!("APP_SHORT_NAME"));
 /// Subfolder inside workspace where the team repo is cloned.
+#[cfg(feature = "team")]
 pub const TEAM_REPO_DIR: &str = concat!(env!("APP_SHORT_NAME"), "-team");
 /// Config file name (e.g. `teamclaw.json`).
 pub const CONFIG_FILE_NAME: &str = concat!(env!("APP_SHORT_NAME"), ".json");
