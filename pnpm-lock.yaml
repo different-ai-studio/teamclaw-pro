@@ -146,6 +146,9 @@ importers:
       '@tauri-apps/plugin-updater':
         specifier: ^2.10.0
         version: 2.10.0
+      '@teamclaw/plugin-team':
+        specifier: workspace:*
+        version: link:../../plugins/team
       '@tiptap/core':
         specifier: ^3.19.0
         version: 3.20.5(@tiptap/pm@3.20.5)
@@ -315,6 +318,8 @@ importers:
       vitest:
         specifier: ^2.1.0
         version: 2.1.9(jsdom@25.0.1)(lightningcss@1.32.0)(msw@2.12.14(typescript@5.9.3))
+
+  plugins/team: {}
 
 packages:
 

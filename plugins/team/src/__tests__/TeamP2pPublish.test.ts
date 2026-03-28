@@ -54,7 +54,7 @@ beforeEach(() => {
 })
 
 async function renderTeamSection() {
-  const { TeamSection } = await import('../plugins/team/components/TeamSection')
+  const { TeamSection } = await import('../components/TeamSection')
   await act(async () => {
     render(React.createElement(TeamSection))
   })

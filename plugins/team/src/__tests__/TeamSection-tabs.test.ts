@@ -51,7 +51,7 @@ beforeEach(() => {
 
 describe('TeamSection tab switcher', () => {
   it('renders two tabs: P2P and S3', async () => {
-    const { TeamSection } = await import('../plugins/team/components/TeamSection')
+    const { TeamSection } = await import('../components/TeamSection')
 
     await act(async () => {
       render(React.createElement(TeamSection))
@@ -64,7 +64,7 @@ describe('TeamSection tab switcher', () => {
   })
 
   it('renders a heading for the Team section', async () => {
-    const { TeamSection } = await import('../plugins/team/components/TeamSection')
+    const { TeamSection } = await import('../components/TeamSection')
 
     await act(async () => {
       render(React.createElement(TeamSection))
@@ -75,7 +75,7 @@ describe('TeamSection tab switcher', () => {
   })
 
   it('P2P tab is selected by default', async () => {
-    const { TeamSection } = await import('../plugins/team/components/TeamSection')
+    const { TeamSection } = await import('../components/TeamSection')
 
     await act(async () => {
       render(React.createElement(TeamSection))

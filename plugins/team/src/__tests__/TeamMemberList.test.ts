@@ -48,7 +48,7 @@ beforeEach(async () => {
   vi.clearAllMocks()
   cleanup()
   // Reset store state between tests
-  const { useTeamMembersStore } = await import('@/plugins/team/stores/team-members')
+  const { useTeamMembersStore } = await import('../stores/team-members')
   useTeamMembersStore.setState({
     members: [],
     myRole: null,
@@ -65,7 +65,7 @@ afterEach(() => {
 
 describe('TeamMemberList', () => {
   it('renders members with metadata', async () => {
-    const { TeamMemberList } = await import('../plugins/team/components/TeamMemberList')
+    const { TeamMemberList } = await import('../components/TeamMemberList')
 
     await act(async () => {
       render(React.createElement(TeamMemberList))
@@ -78,7 +78,7 @@ describe('TeamMemberList', () => {
   })
 
   it('shows Owner badge on owner member', async () => {
-    const { TeamMemberList } = await import('../plugins/team/components/TeamMemberList')
+    const { TeamMemberList } = await import('../components/TeamMemberList')
 
     await act(async () => {
       render(React.createElement(TeamMemberList))
@@ -89,7 +89,7 @@ describe('TeamMemberList', () => {
 
   it('shows Remove buttons when myRole=owner', async () => {
     testRole = 'owner'
-    const { TeamMemberList } = await import('../plugins/team/components/TeamMemberList')
+    const { TeamMemberList } = await import('../components/TeamMemberList')
 
     await act(async () => {
       render(React.createElement(TeamMemberList))
@@ -102,7 +102,7 @@ describe('TeamMemberList', () => {
 
   it('hides Remove buttons when myRole=viewer', async () => {
     testRole = 'viewer'
-    const { TeamMemberList } = await import('../plugins/team/components/TeamMemberList')
+    const { TeamMemberList } = await import('../components/TeamMemberList')
 
     await act(async () => {
       render(React.createElement(TeamMemberList))
