@@ -210,23 +210,25 @@ jobs:
           OSS_ENDPOINT: ${{ vars.OSS_ENDPOINT }}
           OSS_BUCKET: ${{ vars.OSS_BUCKET }}
         run: |
-          pipx install ossutil2 2>/dev/null || pip3 install --user ossutil2 || pip3 install --break-system-packages ossutil2
+          if ! command -v ossutil &>/dev/null; then
+            curl -fsSL https://gosspublic.alicdn.com/ossutil/install.sh | sudo bash
+          fi
           VERSION="${{ github.ref_name }}"
           ARTIFACTS_DIR="src-tauri/target/${{ matrix.target }}/release/bundle"
 
           # Upload DMG
           for f in "$ARTIFACTS_DIR"/dmg/*.dmg; do
-            [ -f "$f" ] && ossutil2 cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
+            [ -f "$f" ] && ossutil cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
           done
 
           # Upload .tar.gz (macOS updater bundle)
           for f in "$ARTIFACTS_DIR"/macos/*.tar.gz; do
-            [ -f "$f" ] && ossutil2 cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
+            [ -f "$f" ] && ossutil cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
           done
 
           # Upload .tar.gz.sig (updater signature)
           for f in "$ARTIFACTS_DIR"/macos/*.tar.gz.sig; do
-            [ -f "$f" ] && ossutil2 cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
+            [ -f "$f" ] && ossutil cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
           done
 
   # Windows job uploads artifacts to the same GitHub Release created by macOS job
@@ -365,23 +367,25 @@ jobs:
           OSS_BUCKET: ${{ vars.OSS_BUCKET }}
         shell: bash
         run: |
-          pipx install ossutil2 2>/dev/null || pip3 install --user ossutil2 || pip3 install --break-system-packages ossutil2
+          if ! command -v ossutil &>/dev/null; then
+            curl -fsSL https://gosspublic.alicdn.com/ossutil/install.sh | sudo bash
+          fi
           VERSION="${{ github.ref_name }}"
           ARTIFACTS_DIR="src-tauri/target/release/bundle"
 
           # Upload NSIS installer
           for f in "$ARTIFACTS_DIR"/nsis/*.exe; do
-            [ -f "$f" ] && ossutil2 cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
+            [ -f "$f" ] && ossutil cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
           done
 
           # Upload .nsis.zip (Windows updater bundle)
           for f in "$ARTIFACTS_DIR"/nsis/*.nsis.zip; do
-            [ -f "$f" ] && ossutil2 cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
+            [ -f "$f" ] && ossutil cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
           done
 
           # Upload .nsis.zip.sig (updater signature)
           for f in "$ARTIFACTS_DIR"/nsis/*.nsis.zip.sig; do
-            [ -f "$f" ] && ossutil2 cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
+            [ -f "$f" ] && ossutil cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
           done
 
   # Generate Tauri updater JSON and upload to OSS
@@ -399,7 +403,9 @@ jobs:
           OSS_ENDPOINT: ${{ vars.OSS_ENDPOINT }}
           OSS_BUCKET: ${{ vars.OSS_BUCKET }}
         run: |
-          pipx install ossutil2 2>/dev/null || pip3 install --user ossutil2 || pip3 install --break-system-packages ossutil2
+          if ! command -v ossutil &>/dev/null; then
+            curl -fsSL https://gosspublic.alicdn.com/ossutil/install.sh | sudo bash
+          fi
 
           VERSION="${{ github.ref_name }}"
           OSS_BASE="https://teamclaw.ucar.cc/teamclaw-pro/releases/$VERSION"
@@ -450,5 +456,5 @@ jobs:
           cat /tmp/latest.json
 
           # Upload to OSS
-          ossutil2 cp /tmp/latest.json "oss://$OSS_BUCKET/teamclaw-pro/update.json" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
+          ossutil cp /tmp/latest.json "oss://$OSS_BUCKET/teamclaw-pro/update.json" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
           echo "Updater JSON uploaded to OSS"

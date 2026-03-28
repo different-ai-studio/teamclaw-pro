@@ -3,6 +3,8 @@ import {
   S3Client,
   GetObjectCommand,
   PutObjectCommand,
+  DeleteObjectCommand,
+  ListObjectsV2Command,
 } from "@aws-sdk/client-s3";
 import STS20150401, * as $STS from "@alicloud/sts20150401";
 import OpenApi, * as $OpenApi from "@alicloud/openapi-client";
@@ -126,6 +128,21 @@ async function ossPut(key, data) {
       ContentType: "application/json",
     })
   );
+}
+
+async function ossDelete(key) {
+  const s3 = getS3Client();
+  await s3.send(
+    new DeleteObjectCommand({ Bucket: BUCKET(), Key: key })
+  );
+}
+
+async function ossList(prefix) {
+  const s3 = getS3Client();
+  const res = await s3.send(
+    new ListObjectsV2Command({ Bucket: BUCKET(), Prefix: prefix })
+  );
+  return res.Contents || [];
 }
 
 // ---------------------------------------------------------------------------
@@ -339,6 +356,182 @@ async function handleApply(body) {
   await ossPut(`teams/${teamId}/_meta/applications/${nodeId}.json`, application);
 
   console.log(`[apply] Application submitted for teamId=${teamId} nodeId=${nodeId}`);
+  return json(200, { success: true });
+}
+
+// ---------------------------------------------------------------------------
+// Team management helpers
+// ---------------------------------------------------------------------------
+const ROLE_RANK = { owner: 3, editor: 2, viewer: 1 };
+
+/**
+ * Verify teamSecret and check that callerNodeId has at least `requiredRole`.
+ * Returns { auth, members } on success, or { error } on failure.
+ */
+async function verifyTeamRole(teamId, teamSecret, callerNodeId, requiredRole) {
+  if (!teamId || !teamSecret || !callerNodeId) {
+    return { error: json(400, { error: "Missing teamId, teamSecret, or callerNodeId" }) };
+  }
+  const auth = await ossGet(`teams/${teamId}/_registry/auth.json`);
+  if (!auth) {
+    return { error: json(404, { error: "Team not found" }) };
+  }
+  if (sha256(teamSecret) !== auth.teamSecretHash) {
+    return { error: json(403, { error: "Invalid team secret" }) };
+  }
+
+  // Read members manifest to check role
+  const manifest = await ossGet(`teams/${teamId}/_team/members.json`);
+  if (!manifest) {
+    return { error: json(404, { error: "Members manifest not found" }) };
+  }
+
+  const callerMember = manifest.members.find((m) => m.nodeId === callerNodeId);
+  if (!callerMember) {
+    return { error: json(403, { error: "Caller is not a team member" }) };
+  }
+
+  const callerRank = ROLE_RANK[callerMember.role] || 0;
+  const requiredRank = ROLE_RANK[requiredRole] || 0;
+  if (callerRank < requiredRank) {
+    return {
+      error: json(403, {
+        error: `Insufficient permissions. Required: ${requiredRole}, your role: ${callerMember.role}`,
+      }),
+    };
+  }
+
+  return { auth, members: manifest.members, callerRole: callerMember.role };
+}
+
+// ---------------------------------------------------------------------------
+// Team management route handlers
+// ---------------------------------------------------------------------------
+
+/** POST /team/list-members — list all team members (viewer+) */
+async function handleTeamListMembers(body) {
+  const { teamId, teamSecret, callerNodeId } = body;
+  const v = await verifyTeamRole(teamId, teamSecret, callerNodeId, "viewer");
+  if (v.error) return v.error;
+
+  console.log(`[team/list-members] Listed ${v.members.length} members for teamId=${teamId}`);
+  return json(200, { members: v.members });
+}
+
+/** POST /team/list-applications — list pending join applications (editor+) */
+async function handleTeamListApplications(body) {
+  const { teamId, teamSecret, callerNodeId } = body;
+  const v = await verifyTeamRole(teamId, teamSecret, callerNodeId, "editor");
+  if (v.error) return v.error;
+
+  const prefix = `teams/${teamId}/_meta/applications/`;
+  const objects = await ossList(prefix);
+
+  const applications = [];
+  for (const obj of objects) {
+    if (!obj.Key.endsWith(".json")) continue;
+    const app = await ossGet(obj.Key);
+    if (app) applications.push(app);
+  }
+
+  console.log(`[team/list-applications] Found ${applications.length} applications for teamId=${teamId}`);
+  return json(200, { applications });
+}
+
+/** POST /team/approve-member — approve a pending application (editor+) */
+async function handleTeamApproveMember(body) {
+  const { teamId, teamSecret, callerNodeId, nodeId, name, role } = body;
+  if (!nodeId || !name) {
+    return json(400, { error: "Missing nodeId or name" });
+  }
+  const v = await verifyTeamRole(teamId, teamSecret, callerNodeId, "editor");
+  if (v.error) return v.error;
+
+  // Read the application to get device info
+  const appKey = `teams/${teamId}/_meta/applications/${nodeId}.json`;
+  const application = await ossGet(appKey);
+
+  const memberRole = role || "editor";
+  if (memberRole !== "editor" && memberRole !== "viewer") {
+    return json(400, { error: `Invalid role: ${memberRole}. Must be editor or viewer.` });
+  }
+
+  // Read current members manifest
+  const manifest = await ossGet(`teams/${teamId}/_team/members.json`);
+  if (!manifest) {
+    return json(500, { error: "Members manifest not found" });
+  }
+
+  // Check if already a member
+  if (v.members.some((m) => m.nodeId === nodeId)) {
+    // Clean up application file if it exists
+    if (application) await ossDelete(appKey);
+    return json(200, { success: true, message: "Already a member" });
+  }
+
+  // Add new member
+  manifest.members.push({
+    nodeId,
+    name,
+    role: memberRole,
+    label: "",
+    platform: application?.platform || "",
+    arch: application?.arch || "",
+    hostname: application?.hostname || "",
+    addedAt: new Date().toISOString(),
+  });
+
+  await ossPut(`teams/${teamId}/_team/members.json`, manifest);
+
+  // Delete application file
+  if (application) await ossDelete(appKey);
+
+  console.log(`[team/approve-member] Approved ${nodeId} as ${memberRole} in teamId=${teamId}`);
+  return json(200, { success: true, nodeId, role: memberRole });
+}
+
+/** POST /team/reject-member — reject a pending application (editor+) */
+async function handleTeamRejectMember(body) {
+  const { teamId, teamSecret, callerNodeId, nodeId } = body;
+  if (!nodeId) {
+    return json(400, { error: "Missing nodeId" });
+  }
+  const v = await verifyTeamRole(teamId, teamSecret, callerNodeId, "editor");
+  if (v.error) return v.error;
+
+  const appKey = `teams/${teamId}/_meta/applications/${nodeId}.json`;
+  const app = await ossGet(appKey);
+  if (!app) {
+    return json(404, { error: "Application not found" });
+  }
+  await ossDelete(appKey);
+
+  console.log(`[team/reject-member] Rejected application from ${nodeId} in teamId=${teamId}`);
+  return json(200, { success: true });
+}
+
+/** POST /team/remove-member — remove a member (owner only) */
+async function handleTeamRemoveMember(body) {
+  const { teamId, teamSecret, callerNodeId, nodeId } = body;
+  if (!nodeId) {
+    return json(400, { error: "Missing nodeId" });
+  }
+  if (nodeId === callerNodeId) {
+    return json(400, { error: "Cannot remove yourself" });
+  }
+  const v = await verifyTeamRole(teamId, teamSecret, callerNodeId, "owner");
+  if (v.error) return v.error;
+
+  const filtered = v.members.filter((m) => m.nodeId !== nodeId);
+  if (filtered.length === v.members.length) {
+    return json(404, { error: "Member not found" });
+  }
+
+  const manifest = await ossGet(`teams/${teamId}/_team/members.json`);
+  manifest.members = filtered;
+  await ossPut(`teams/${teamId}/_team/members.json`, manifest);
+
+  console.log(`[team/remove-member] Removed ${nodeId} from teamId=${teamId}`);
   return json(200, { success: true });
 }
 
@@ -616,6 +809,16 @@ export async function handler(event, context) {
         return await handleResetSecret(body);
       case "/apply":
         return await handleApply(body);
+      case "/team/list-members":
+        return await handleTeamListMembers(body);
+      case "/team/list-applications":
+        return await handleTeamListApplications(body);
+      case "/team/approve-member":
+        return await handleTeamApproveMember(body);
+      case "/team/reject-member":
+        return await handleTeamRejectMember(body);
+      case "/team/remove-member":
+        return await handleTeamRemoveMember(body);
       case "/ai/setup-team":
         return await handleAiSetupTeam(body);
       case "/ai/add-member":
