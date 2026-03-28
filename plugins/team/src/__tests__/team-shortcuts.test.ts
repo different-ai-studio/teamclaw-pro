@@ -29,7 +29,7 @@ describe('team-shortcuts loader', () => {
   it('returns null when file does not exist', async () => {
     mockExists.mockResolvedValue(false)
     
-    const { loadTeamShortcutsFile } = await import('@/plugins/team/lib/team-shortcuts')
+    const { loadTeamShortcutsFile } = await import('../lib/team-shortcuts')
     const result = await loadTeamShortcutsFile('/workspace')
 
     expect(result).toBeNull()
@@ -46,7 +46,7 @@ describe('team-shortcuts loader', () => {
     mockExists.mockResolvedValue(true)
     mockReadTextFile.mockResolvedValue(JSON.stringify(mockData))
 
-    const { loadTeamShortcutsFile } = await import('@/plugins/team/lib/team-shortcuts')
+    const { loadTeamShortcutsFile } = await import('../lib/team-shortcuts')
     const result = await loadTeamShortcutsFile('/workspace')
 
     expect(result).toHaveLength(1)
@@ -57,7 +57,7 @@ describe('team-shortcuts loader', () => {
     mockExists.mockResolvedValue(true)
     mockReadTextFile.mockResolvedValue('not json')
 
-    const { loadTeamShortcutsFile } = await import('@/plugins/team/lib/team-shortcuts')
+    const { loadTeamShortcutsFile } = await import('../lib/team-shortcuts')
     const result = await loadTeamShortcutsFile('/workspace')
     
     expect(result).toBeNull()

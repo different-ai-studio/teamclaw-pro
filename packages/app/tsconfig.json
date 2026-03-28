@@ -27,6 +27,13 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src"],
-  "exclude": ["src/**/__tests__/**", "src/**/*.test.ts", "src/**/*.test.tsx"]
+  "include": ["src", "../../plugins/team/src"],
+  "exclude": [
+    "src/**/__tests__/**",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "../../plugins/team/src/**/__tests__/**",
+    "../../plugins/team/src/**/*.test.ts",
+    "../../plugins/team/src/**/*.test.tsx"
+  ]
 }

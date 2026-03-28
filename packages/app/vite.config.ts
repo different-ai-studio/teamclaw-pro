@@ -111,6 +111,10 @@ export default defineConfig({
       'src/**/*.test.tsx',
       'src/**/__tests__/**/*.test.ts',
       'src/**/__tests__/**/*.test.tsx',
+      '../../plugins/team/src/**/*.test.ts',
+      '../../plugins/team/src/**/*.test.tsx',
+      '../../plugins/team/src/**/__tests__/**/*.test.ts',
+      '../../plugins/team/src/**/__tests__/**/*.test.tsx',
     ],
   },
   build: {
