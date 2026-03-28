@@ -1,10 +1,10 @@
-use crate::commands::oss_sync::*;
-use crate::commands::oss_types::*;
-use crate::commands::p2p_state::IrohState;
+use crate::plugins::team_impl::oss_sync::*;
+use crate::plugins::team_impl::oss_types::*;
+use crate::plugins::team_impl::p2p_state::IrohState;
 #[cfg(feature = "p2p")]
-use crate::commands::team_p2p::get_node_id;
+use crate::plugins::team_impl::team_p2p::get_node_id;
 #[allow(unused_imports)]
-use crate::commands::TEAMCLAW_DIR;
+use crate::plugins::team_impl::TEAMCLAW_DIR;
 
 use serde_json::Value;
 use std::path::Path;

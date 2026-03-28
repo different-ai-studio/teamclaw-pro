@@ -1,5 +1,5 @@
-use crate::commands::version_types::{FileVersion, VersionedFileInfo, MAX_VERSIONS};
-use crate::commands::TEAMCLAW_DIR;
+use crate::plugins::team_impl::version_types::{FileVersion, VersionedFileInfo, MAX_VERSIONS};
+use crate::plugins::team_impl::TEAMCLAW_DIR;
 use anyhow::{Context, Result};
 use libsql::{params, Builder, Connection};
 use std::sync::Arc;

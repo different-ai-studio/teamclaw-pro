@@ -1,7 +1,7 @@
-use crate::commands::oss_types::*;
-use crate::commands::team::TEAM_REPO_DIR;
-use crate::commands::version_types::MAX_VERSIONS;
-use crate::commands::TEAMCLAW_DIR;
+use crate::plugins::team_impl::oss_types::*;
+use crate::plugins::team_impl::team::TEAM_REPO_DIR;
+use crate::plugins::team_impl::version_types::MAX_VERSIONS;
+use crate::plugins::team_impl::TEAMCLAW_DIR;
 
 use aws_sdk_s3::primitives::ByteStream;
 use chrono::Utc;
@@ -994,7 +994,7 @@ impl OssSyncManager {
         &self,
         doc_type: DocType,
         file_path: &str,
-    ) -> Vec<crate::commands::version_types::FileVersion> {
+    ) -> Vec<crate::plugins::team_impl::version_types::FileVersion> {
         let doc = self.get_doc(doc_type);
         let files_map = doc.get_map("files");
 
@@ -1019,7 +1019,7 @@ impl OssSyncManager {
             _ => return Vec::new(),
         };
 
-        let mut result: Vec<crate::commands::version_types::FileVersion> = versions_list
+        let mut result: Vec<crate::plugins::team_impl::version_types::FileVersion> = versions_list
             .iter()
             .enumerate()
             .filter_map(|(i, v)| {
@@ -1044,7 +1044,7 @@ impl OssSyncManager {
                         Some(loro::LoroValue::Bool(b)) => *b,
                         _ => false,
                     };
-                    Some(crate::commands::version_types::FileVersion {
+                    Some(crate::plugins::team_impl::version_types::FileVersion {
                         index: i as u32,
                         content,
                         hash,
@@ -1068,7 +1068,7 @@ impl OssSyncManager {
     pub fn list_all_versioned_files(
         &self,
         doc_type: Option<DocType>,
-    ) -> Vec<crate::commands::version_types::VersionedFileInfo> {
+    ) -> Vec<crate::plugins::team_impl::version_types::VersionedFileInfo> {
         let doc_types: Vec<DocType> = match doc_type {
             Some(dt) => vec![dt],
             None => DocType::all().to_vec(),
@@ -1107,7 +1107,7 @@ impl OssSyncManager {
                             _ => String::new(),
                         };
 
-                        result.push(crate::commands::version_types::VersionedFileInfo {
+                        result.push(crate::plugins::team_impl::version_types::VersionedFileInfo {
                             path: path.to_string(),
                             doc_type: dt.path().to_string(),
                             current_deleted,
