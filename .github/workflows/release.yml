@@ -11,8 +11,43 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Pre-flight: verify OSS credentials and secrets before expensive builds
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify OSS access
+        env:
+          OSS_ACCESS_KEY_ID: ${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+          OSS_ACCESS_KEY_SECRET: ${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+          OSS_ENDPOINT: ${{ vars.OSS_ENDPOINT }}
+          OSS_BUCKET: ${{ vars.OSS_BUCKET }}
+        run: |
+          set -e
+          curl -fsSL https://gosspublic.alicdn.com/ossutil/install.sh | sudo bash
+          echo "preflight-$(date +%s)" > /tmp/oss-probe.txt
+          ossutil cp /tmp/oss-probe.txt "oss://$OSS_BUCKET/teamclaw-pro/.preflight-probe" \
+            -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
+          ossutil rm "oss://$OSS_BUCKET/teamclaw-pro/.preflight-probe" \
+            -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force || true
+          echo "✅ OSS write access verified"
+
+      - name: Verify required secrets
+        env:
+          TAURI_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          BUILD_CONFIG: ${{ secrets.BUILD_CONFIG_PRODUCTION }}
+        run: |
+          MISSING=""
+          [ -z "$TAURI_KEY" ] && MISSING="$MISSING TAURI_SIGNING_PRIVATE_KEY"
+          [ -z "$BUILD_CONFIG" ] && MISSING="$MISSING BUILD_CONFIG_PRODUCTION"
+          if [ -n "$MISSING" ]; then
+            echo "❌ Missing secrets:$MISSING"
+            exit 1
+          fi
+          echo "✅ All required secrets present"
+
   # macOS job creates the GitHub Release and uploads macOS artifacts
   release-macos:
+    needs: preflight
     permissions:
       contents: write
     strategy:
@@ -233,6 +268,7 @@ jobs:
 
   # Windows job uploads artifacts to the same GitHub Release created by macOS job
   release-windows:
+    needs: preflight
     permissions:
       contents: write
     runs-on: windows-latest
