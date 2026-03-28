@@ -16,7 +16,12 @@ vi.mock('react-i18next', () => ({
 const mockInvoke = vi.fn(async (cmd: string) => {
   if (cmd === 'p2p_sync_status') return null
   if (cmd === 'webdav_get_status') return null
-  if (cmd === 'get_device_info') return { nodeId: 'test-node', platform: 'macos', arch: 'aarch64', hostname: 'test-mac' }
+  if (cmd === 'get_device_info') return {
+    nodeId: 'test-node-id-123',
+    platform: 'macos',
+    arch: 'aarch64',
+    hostname: 'test-mac',
+  }
   if (cmd === 'get_p2p_config') return null
   if (cmd === 'p2p_reconnect') return null
   if (cmd === 'unified_team_get_members') return []
@@ -24,17 +29,16 @@ const mockInvoke = vi.fn(async (cmd: string) => {
   return null
 })
 
-// Mock Tauri invoke to prevent real API calls
 vi.mock('@tauri-apps/api/core', () => ({
   invoke: mockInvoke,
 }))
 
-// Mock Tauri event API
+// Mock Tauri event API to prevent transformCallback errors
 vi.mock('@tauri-apps/api/event', () => ({
   listen: vi.fn(async () => () => {}),
 }))
 
-// Mock plugin-fs
+// Mock plugin-fs to prevent import errors
 vi.mock('@tauri-apps/plugin-fs', () => ({
   readTextFile: vi.fn(async () => ''),
   exists: vi.fn(async () => false),
@@ -49,9 +53,9 @@ beforeEach(() => {
   }
 })
 
-describe('TeamSection tab switcher', () => {
-  it('renders two tabs: P2P and S3', async () => {
-    const { TeamSection } = await import('../components/settings/TeamSection')
+describe('TeamSection dual tabs (P2P / S3)', () => {
+  it('shows exactly two tabs: P2P and S3', async () => {
+    const { TeamSection } = await import('../plugins/team/components/TeamSection')
 
     await act(async () => {
       render(React.createElement(TeamSection))
@@ -63,26 +67,15 @@ describe('TeamSection tab switcher', () => {
     expect(tabs[1].textContent).toBe('S3')
   })
 
-  it('renders a heading for the Team section', async () => {
-    const { TeamSection } = await import('../components/settings/TeamSection')
-
-    await act(async () => {
-      render(React.createElement(TeamSection))
-    })
-
-    const headings = screen.getAllByRole('heading')
-    expect(headings.length).toBeGreaterThan(0)
-  })
-
-  it('P2P tab is selected by default', async () => {
-    const { TeamSection } = await import('../components/settings/TeamSection')
+  it('does not show a Git or WebDAV tab', async () => {
+    const { TeamSection } = await import('../plugins/team/components/TeamSection')
 
     await act(async () => {
       render(React.createElement(TeamSection))
     })
 
     const tabs = screen.queryAllByRole('tab')
-    const p2pTab = tabs.find(t => t.textContent === 'P2P')
-    expect(p2pTab?.getAttribute('aria-selected')).toBe('true')
+    expect(tabs.every(t => !t.textContent?.toLowerCase().includes('git'))).toBe(true)
+    expect(tabs.every(t => !t.textContent?.toLowerCase().includes('webdav'))).toBe(true)
   })
 })

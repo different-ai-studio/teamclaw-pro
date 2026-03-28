@@ -283,11 +283,17 @@ pub fn run() {
             commands::webview::init_shared_config(&mut wvm);
             wvm
         })
+        .manage(commands::spotlight::SpotlightState::default());
+
+    // Team-only managed state (feature-gated)
+    #[cfg(feature = "team")]
+    let builder = builder
         .manage(<commands::p2p_state::IrohState>::default())
-        .manage(commands::spotlight::SpotlightState::default())
         .manage(tokio::sync::Mutex::new(commands::team_webdav::WebDavManagedState::default()))
         .manage(commands::oss_sync::OssSyncState::default())
-        .manage(commands::version_commands::VersionStoreState::default())
+        .manage(commands::version_commands::VersionStoreState::default());
+
+    let builder = builder
         .invoke_handler(tauri::generate_handler![
             commands::greet,
             commands::show_in_folder,
@@ -407,15 +413,25 @@ pub fn run() {
             commands::git::git_diff,
             commands::git::git_checkout_file,
             commands::git::git_show_file,
+            #[cfg(feature = "team")]
             commands::team::get_team_status,
+            #[cfg(feature = "team")]
             commands::team::team_check_git_installed,
+            #[cfg(feature = "team")]
             commands::team::team_check_workspace_has_git,
+            #[cfg(feature = "team")]
             commands::team::team_init_repo,
+            #[cfg(feature = "team")]
             commands::team::team_generate_gitignore,
+            #[cfg(feature = "team")]
             commands::team::team_sync_repo,
+            #[cfg(feature = "team")]
             commands::team::team_disconnect_repo,
+            #[cfg(feature = "team")]
             commands::team::get_team_config,
+            #[cfg(feature = "team")]
             commands::team::save_team_config,
+            #[cfg(feature = "team")]
             commands::team::clear_team_config,
             #[cfg(feature = "p2p")]
             commands::team_p2p::get_device_node_id,
@@ -457,24 +473,43 @@ pub fn run() {
             commands::team_p2p::p2p_skills_leaderboard,
             #[cfg(feature = "p2p")]
             commands::team_p2p::p2p_save_seed_config,
+            #[cfg(feature = "team")]
             commands::oss_commands::oss_create_team,
+            #[cfg(feature = "team")]
             commands::oss_commands::oss_join_team,
+            #[cfg(feature = "team")]
             commands::oss_commands::oss_restore_sync,
+            #[cfg(feature = "team")]
             commands::oss_commands::oss_leave_team,
+            #[cfg(feature = "team")]
             commands::oss_commands::oss_sync_now,
+            #[cfg(feature = "team")]
             commands::oss_commands::oss_get_sync_status,
+            #[cfg(feature = "team")]
             commands::oss_commands::oss_get_files_sync_status,
+            #[cfg(feature = "team")]
             commands::oss_commands::oss_create_snapshot,
+            #[cfg(feature = "team")]
             commands::oss_commands::oss_cleanup_updates,
+            #[cfg(feature = "team")]
             commands::oss_commands::oss_update_members,
+            #[cfg(feature = "team")]
             commands::oss_commands::oss_reset_team_secret,
+            #[cfg(feature = "team")]
             commands::oss_commands::oss_get_team_config,
+            #[cfg(feature = "team")]
             commands::oss_commands::oss_apply_team,
+            #[cfg(feature = "team")]
             commands::oss_commands::oss_get_pending_application,
+            #[cfg(feature = "team")]
             commands::oss_commands::oss_cancel_application,
+            #[cfg(feature = "team")]
             commands::oss_commands::oss_approve_application,
+            #[cfg(feature = "team")]
             commands::version_commands::team_list_file_versions,
+            #[cfg(feature = "team")]
             commands::version_commands::team_list_all_versioned_files,
+            #[cfg(feature = "team")]
             commands::version_commands::team_restore_file_version,
             commands::deps::check_dependencies,
             commands::deps::install_dependency,
@@ -497,10 +532,15 @@ pub fn run() {
             telemetry::commands::telemetry_save_report,
             telemetry::commands::telemetry_track,
             telemetry::commands::telemetry_get_reports,
+            #[cfg(feature = "team")]
             telemetry::commands::telemetry_export_team_feedback,
+            #[cfg(feature = "team")]
             telemetry::commands::telemetry_get_team_feedback_summary,
+            #[cfg(feature = "team")]
             telemetry::commands::telemetry_export_leaderboard,
+            #[cfg(feature = "team")]
             telemetry::commands::telemetry_get_team_leaderboard,
+            #[cfg(feature = "team")]
             telemetry::commands::telemetry_get_member_aggregated_stats,
             telemetry::commands::identity_list_users,
             telemetry::commands::identity_bind,
@@ -523,17 +563,29 @@ pub fn run() {
             commands::spotlight::force_toggle_spotlight,
             commands::spotlight::get_spotlight_state,
             commands::spotlight::expand_to_main,
+            #[cfg(feature = "team")]
             commands::team_webdav::webdav_connect,
+            #[cfg(feature = "team")]
             commands::team_webdav::webdav_sync,
+            #[cfg(feature = "team")]
             commands::team_webdav::webdav_disconnect,
+            #[cfg(feature = "team")]
             commands::team_webdav::webdav_export_config,
+            #[cfg(feature = "team")]
             commands::team_webdav::webdav_import_config,
+            #[cfg(feature = "team")]
             commands::team_webdav::webdav_get_status,
+            #[cfg(feature = "team")]
             commands::team_webdav::get_team_mode,
+            #[cfg(feature = "team")]
             commands::team_unified::unified_team_get_members,
+            #[cfg(feature = "team")]
             commands::team_unified::unified_team_add_member,
+            #[cfg(feature = "team")]
             commands::team_unified::unified_team_remove_member,
+            #[cfg(feature = "team")]
             commands::team_unified::unified_team_update_member_role,
+            #[cfg(feature = "team")]
             commands::team_unified::unified_team_get_my_role,
         ]);
 

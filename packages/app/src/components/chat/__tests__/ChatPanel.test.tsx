@@ -156,7 +156,7 @@ const teamModeState = {
   applyTeamModelToOpenCode: vi.fn(() => Promise.resolve()),
 };
 
-vi.mock('@/stores/team-mode', () => {
+vi.mock('@/plugins/team/stores/team-mode', () => {
   const useTeamModeStore = (selector: (s: typeof teamModeState) => unknown) =>
     selector(teamModeState);
   Object.assign(useTeamModeStore, {

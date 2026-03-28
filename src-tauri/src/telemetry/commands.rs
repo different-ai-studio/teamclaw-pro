@@ -1,9 +1,10 @@
-use super::db::{
-    FeedbackSummary, LeaderboardStats, MessageFeedback, SessionReport, SkillFeedbackStats,
-    TelemetryDb,
-};
+use super::db::{MessageFeedback, SessionReport, TelemetryDb};
+#[cfg(feature = "team")]
+use super::db::{FeedbackSummary, LeaderboardStats, SkillFeedbackStats};
+#[cfg(feature = "team")]
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+#[cfg(feature = "team")]
 use std::collections::HashMap;
 use std::sync::Arc;
 use tauri_plugin_aptabase::EventTracker;
@@ -281,6 +282,7 @@ pub async fn identity_get_usage(
 
 // ─── Team Feedback Export/Aggregate ─────────────────────────────────────
 
+#[cfg(feature = "team")]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MemberFeedbackExport {
@@ -290,6 +292,7 @@ pub struct MemberFeedbackExport {
     pub summary: FeedbackSummary,
 }
 
+#[cfg(feature = "team")]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TeamFeedbackSummary {
@@ -302,6 +305,7 @@ pub struct TeamFeedbackSummary {
 }
 
 /// Export the current user's feedback summary to teamclaw-team/_feedback/{nodeId}.json.
+#[cfg(feature = "team")]
 #[tauri::command]
 pub async fn telemetry_export_team_feedback(
     state: tauri::State<'_, TelemetryState>,
@@ -368,6 +372,7 @@ pub async fn telemetry_export_team_feedback(
 }
 
 /// Read all member feedback JSONs from teamclaw-team/_feedback/ and return aggregated team summary.
+#[cfg(feature = "team")]
 #[tauri::command]
 pub async fn telemetry_get_team_feedback_summary(
     opencode_state: tauri::State<'_, crate::commands::opencode::OpenCodeState>,
@@ -460,6 +465,7 @@ pub async fn telemetry_get_team_feedback_summary(
 
 // ─── Leaderboard Export/Aggregate ───────────────────────────────────────
 
+#[cfg(feature = "team")]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MemberLeaderboardExport {
@@ -472,6 +478,7 @@ pub struct MemberLeaderboardExport {
     pub workspaces: std::collections::HashMap<String, LeaderboardStats>,
 }
 
+#[cfg(feature = "team")]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TeamLeaderboard {
@@ -480,6 +487,7 @@ pub struct TeamLeaderboard {
 
 /// Export the current user's leaderboard stats to teamclaw-team/.leaderboard/{memberName}.json.
 /// Reads from .teamclaw/stats.json and organizes by workspace.
+#[cfg(feature = "team")]
 #[tauri::command]
 pub async fn telemetry_export_leaderboard(
     state: tauri::State<'_, TelemetryState>,
@@ -595,6 +603,7 @@ pub async fn telemetry_export_leaderboard(
 }
 
 /// Aggregate stats from all workspaces for a member
+#[cfg(feature = "team")]
 fn aggregate_workspace_stats(
     workspaces: &std::collections::HashMap<String, LeaderboardStats>,
 ) -> LeaderboardStats {
@@ -621,6 +630,7 @@ fn aggregate_workspace_stats(
 
 /// Read all member leaderboard JSONs from teamclaw-team/.leaderboard/ and return team leaderboard.
 /// Aggregates stats from all workspaces for each member.
+#[cfg(feature = "team")]
 #[tauri::command]
 pub async fn telemetry_get_team_leaderboard(
     opencode_state: tauri::State<'_, crate::commands::opencode::OpenCodeState>,
@@ -657,6 +667,7 @@ pub async fn telemetry_get_team_leaderboard(
 }
 
 /// Get aggregated stats for a specific member across all workspaces
+#[cfg(feature = "team")]
 #[tauri::command]
 pub async fn telemetry_get_member_aggregated_stats(
     member_name: String,

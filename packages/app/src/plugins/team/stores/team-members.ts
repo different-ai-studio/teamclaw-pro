@@ -1,7 +1,7 @@
 // packages/app/src/stores/team-members.ts
 import { create } from 'zustand'
 import { invoke } from '@tauri-apps/api/core'
-import type { TeamMember } from '../lib/git/types'
+import type { TeamMember } from '@/lib/git/types'
 
 type MemberRole = 'owner' | 'editor' | 'viewer'
 

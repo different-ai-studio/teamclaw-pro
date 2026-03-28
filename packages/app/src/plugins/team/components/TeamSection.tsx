@@ -4,10 +4,10 @@ import {
   Users,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { TeamP2PConfig } from './team/TeamP2PConfig'
-import { TeamOSSConfig } from './team/TeamOSSConfig'
-import { useTeamOssStore } from '@/stores/team-oss'
-import { useTeamModeStore } from '@/stores/team-mode'
+import { TeamP2PConfig } from './settings/team/TeamP2PConfig'
+import { TeamOSSConfig } from './settings/team/TeamOSSConfig'
+import { useTeamOssStore } from '../stores/team-oss'
+import { useTeamModeStore } from '../stores/team-mode'
 
 // ─── Tab Switcher ────────────────────────────────────────────────────────────
 

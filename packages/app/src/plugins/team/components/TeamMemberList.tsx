@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
 import { UserMinus, Shield, Pencil, Eye, UserPlus, Clock, UserCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useTeamMembersStore } from '../../stores/team-members'
-import { AddMemberInput } from './AddMemberInput'
+import { useTeamMembersStore } from '../stores/team-members'
+import { AddMemberInput } from '@/components/settings/AddMemberInput'
 
 function truncateId(id: string): string {
   if (id.length <= 16) return id

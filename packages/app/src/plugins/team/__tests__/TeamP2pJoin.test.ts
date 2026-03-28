@@ -71,7 +71,7 @@ beforeEach(() => {
 
 async function renderTeamSection() {
   // TeamSection renders TeamP2PConfig directly; default joinMode is 'ticket'
-  const { TeamSection } = await import('../components/settings/TeamSection')
+  const { TeamSection } = await import('../plugins/team/components/TeamSection')
   await act(async () => {
     render(React.createElement(TeamSection))
   })

@@ -95,7 +95,7 @@ afterEach(() => {
 describe('TeamSection Join Approval Status', () => {
   it('shows "Waiting for approval" when join fails with Not authorized', async () => {
     joinDriveError = new Error('not authorized: your NodeId is not in the team allowlist')
-    const { TeamSection } = await import('../components/settings/TeamSection')
+    const { TeamSection } = await import('../plugins/team/components/TeamSection')
 
     await act(async () => {
       render(React.createElement(TeamSection))
@@ -149,7 +149,7 @@ describe('TeamSection Join Approval Status', () => {
 
   it('shows connected status when join succeeds', async () => {
     joinDriveError = null
-    const { TeamSection } = await import('../components/settings/TeamSection')
+    const { TeamSection } = await import('../plugins/team/components/TeamSection')
 
     await act(async () => {
       render(React.createElement(TeamSection))

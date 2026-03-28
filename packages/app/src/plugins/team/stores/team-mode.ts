@@ -3,7 +3,7 @@ import {
   addCustomProviderToConfig,
   removeCustomProviderFromConfig,
 } from '@/lib/opencode/config'
-import { useProviderStore } from './provider'
+import { useProviderStore } from '@/stores/provider'
 import { isTauri } from '@/lib/utils'
 import { appShortName, buildConfig, TEAM_API_KEY_STORAGE_KEY } from '@/lib/build-config'
 
@@ -240,7 +240,7 @@ export const useTeamModeStore = create<TeamModeState>((set, get) => ({
   setDevUnlocked: (unlocked: boolean) => {
     set({ devUnlocked: unlocked })
     // Refresh file tree so hidden files appear/disappear
-    import('./workspace').then(({ useWorkspaceStore }) => {
+    import('@/stores/workspace').then(({ useWorkspaceStore }) => {
       useWorkspaceStore.getState().refreshFileTree()
     })
   },

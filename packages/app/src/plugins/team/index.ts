@@ -6,7 +6,7 @@ import type { VersionedFileInfo, FileVersion } from '@/stores/version-history'
 import { useOssSyncInit } from './hooks/useOssSyncInit'
 import { useP2pAutoReconnect } from './hooks/useP2pAutoReconnect'
 
-const TeamSection = lazy(() => import('@/components/settings/TeamSection').then(m => ({ default: m.TeamSection })))
+const TeamSection = lazy(() => import('./components/TeamSection').then(m => ({ default: m.TeamSection })))
 
 registerPlugin({
   id: 'team-sync',
@@ -27,13 +27,13 @@ registerPlugin({
   },
 
   onWorkspaceChange(workspacePath: string) {
-    import('@/stores/team-mode').then(({ useTeamModeStore }) => {
+    import('./stores/team-mode').then(({ useTeamModeStore }) => {
       useTeamModeStore.getState().loadTeamConfig(workspacePath).catch(() => {})
     })
   },
 
   onWorkspaceReset() {
-    import('@/stores/team-mode').then(({ useTeamModeStore }) => {
+    import('./stores/team-mode').then(({ useTeamModeStore }) => {
       useTeamModeStore.setState({
         teamMode: false,
         teamModelConfig: null,
@@ -44,7 +44,7 @@ registerPlugin({
         p2pConfigured: false,
       })
     })
-    import('@/stores/team-oss').then(({ useTeamOssStore }) => {
+    import('./stores/team-oss').then(({ useTeamOssStore }) => {
       useTeamOssStore.getState().cleanup()
     })
   },
