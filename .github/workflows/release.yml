@@ -439,20 +439,24 @@ jobs:
           if ! command -v ossutil &>/dev/null; then
             curl -fsSL -o /tmp/ossutil.zip https://gosspublic.alicdn.com/ossutil/1.7.19/ossutil-v1.7.19-windows-amd64.zip
             unzip -o /tmp/ossutil.zip -d /tmp/ossutil-extract
-            cp /tmp/ossutil-extract/ossutil-v1.7.19-windows-amd64/ossutil64.exe /usr/bin/ossutil.exe || cp /tmp/ossutil-extract/ossutil-v1.7.19-windows-amd64/ossutil64.exe "$HOME/ossutil.exe"
-            export PATH="$HOME:$PATH"
+            mkdir -p "$HOME/bin"
+            cp /tmp/ossutil-extract/ossutil-v1.7.19-windows-amd64/ossutil64.exe "$HOME/bin/ossutil.exe"
           fi
+          export PATH="$HOME/bin:$PATH"
           VERSION="${{ github.ref_name }}"
           ARTIFACTS_DIR="src-tauri/target/release/bundle"
 
+          echo "Artifacts found:"
+          ls -lhR "$ARTIFACTS_DIR"/nsis/ 2>/dev/null || echo "No nsis directory found"
+
           for f in "$ARTIFACTS_DIR"/nsis/*.exe; do
-            [ -f "$f" ] && ossutil cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
+            [ -f "$f" ] && ossutil cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force || true
           done
           for f in "$ARTIFACTS_DIR"/nsis/*.nsis.zip; do
-            [ -f "$f" ] && ossutil cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
+            [ -f "$f" ] && ossutil cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force || true
           done
           for f in "$ARTIFACTS_DIR"/nsis/*.nsis.zip.sig; do
-            [ -f "$f" ] && ossutil cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
+            [ -f "$f" ] && ossutil cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force || true
           done
 
   # Generate Tauri updater JSON and upload to OSS
