@@ -210,7 +210,7 @@ jobs:
           OSS_ENDPOINT: ${{ vars.OSS_ENDPOINT }}
           OSS_BUCKET: ${{ vars.OSS_BUCKET }}
         run: |
-          pip3 install ossutil2
+          pip3 install --break-system-packages ossutil2 || pip3 install ossutil2
           VERSION="${{ github.ref_name }}"
           ARTIFACTS_DIR="src-tauri/target/${{ matrix.target }}/release/bundle"
 
@@ -365,7 +365,7 @@ jobs:
           OSS_BUCKET: ${{ vars.OSS_BUCKET }}
         shell: bash
         run: |
-          pip3 install ossutil2
+          pip3 install --break-system-packages ossutil2 || pip3 install ossutil2
           VERSION="${{ github.ref_name }}"
           ARTIFACTS_DIR="src-tauri/target/release/bundle"
 
@@ -399,7 +399,7 @@ jobs:
           OSS_ENDPOINT: ${{ vars.OSS_ENDPOINT }}
           OSS_BUCKET: ${{ vars.OSS_BUCKET }}
         run: |
-          pip3 install ossutil2
+          pip3 install --break-system-packages ossutil2 || pip3 install ossutil2
 
           VERSION="${{ github.ref_name }}"
           OSS_BASE="https://teamclaw.ucar.cc/teamclaw-pro/releases/$VERSION"
