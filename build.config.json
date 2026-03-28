@@ -1,0 +1,37 @@
+{
+  "team": {
+    "llm": {
+      "baseUrl": "",
+      "model": "",
+      "modelName": ""
+    },
+    "lockLlmConfig": false,
+    "seedUrl": "http://localhost:9090"
+  },
+  "app": {
+    "name": "TeamClaw",
+    "shortName": "teamclaw",
+    "uiVariant": "workspace"
+  },
+  "features": {
+    "advancedMode": true,
+    "teamMode": true,
+    "updater": true,
+    "channels": {
+      "discord": true,
+      "feishu": true,
+      "email": true,
+      "kook": true,
+      "wecom": true,
+      "wechat": true
+    }
+  },
+  "s3": {
+    "teamEndpoint": "https://cloud.ucar.cc",
+    "forcePathStyle": false
+  },
+  "defaults": {
+    "locale": "zh-CN",
+    "theme": "system"
+  }
+}
