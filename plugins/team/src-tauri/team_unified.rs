@@ -125,7 +125,7 @@ async fn require_manager_role(manifest: &TeamManifest, caller_node_id: &str) -> 
 /// - P2P: reads from p2p config's allowed_members
 #[tauri::command]
 pub async fn unified_team_get_members(
-    opencode_state: State<'_, super::opencode::OpenCodeState>,
+    opencode_state: State<'_, crate::commands::opencode::OpenCodeState>,
     oss_state: State<'_, super::oss_sync::OssSyncState>,
     iroh_state: State<'_, super::p2p_state::IrohState>,
 ) -> Result<Vec<TeamMember>, String> {
@@ -161,7 +161,7 @@ pub async fn unified_team_get_members(
 #[tauri::command]
 pub async fn unified_team_add_member(
     member: TeamMember,
-    opencode_state: State<'_, super::opencode::OpenCodeState>,
+    opencode_state: State<'_, crate::commands::opencode::OpenCodeState>,
     oss_state: State<'_, super::oss_sync::OssSyncState>,
     iroh_state: State<'_, super::p2p_state::IrohState>,
 ) -> Result<(), String> {
@@ -220,7 +220,7 @@ pub async fn unified_team_add_member(
 #[tauri::command]
 pub async fn unified_team_remove_member(
     node_id: String,
-    opencode_state: State<'_, super::opencode::OpenCodeState>,
+    opencode_state: State<'_, crate::commands::opencode::OpenCodeState>,
     oss_state: State<'_, super::oss_sync::OssSyncState>,
     iroh_state: State<'_, super::p2p_state::IrohState>,
 ) -> Result<(), String> {
@@ -280,7 +280,7 @@ pub async fn unified_team_remove_member(
 pub async fn unified_team_update_member_role(
     node_id: String,
     role: MemberRole,
-    opencode_state: State<'_, super::opencode::OpenCodeState>,
+    opencode_state: State<'_, crate::commands::opencode::OpenCodeState>,
     oss_state: State<'_, super::oss_sync::OssSyncState>,
     iroh_state: State<'_, super::p2p_state::IrohState>,
 ) -> Result<(), String> {
@@ -328,7 +328,7 @@ pub async fn unified_team_update_member_role(
 /// Get the current device's role in the active team.
 #[tauri::command]
 pub async fn unified_team_get_my_role(
-    opencode_state: State<'_, super::opencode::OpenCodeState>,
+    opencode_state: State<'_, crate::commands::opencode::OpenCodeState>,
     oss_state: State<'_, super::oss_sync::OssSyncState>,
     iroh_state: State<'_, super::p2p_state::IrohState>,
 ) -> Result<MemberRole, String> {

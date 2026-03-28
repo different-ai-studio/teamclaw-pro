@@ -16,7 +16,7 @@ use sha2::{Digest, Sha256};
 use tauri::State;
 use tokio::task::JoinHandle;
 
-use super::opencode::OpenCodeState;
+use crate::commands::opencode::OpenCodeState;
 use super::team::{get_workspace_path, TEAM_REPO_DIR};
 use super::TEAMCLAW_DIR;
 
@@ -749,7 +749,7 @@ pub async fn webdav_connect(
     write_webdav_config(&workspace_path, &new_config)?;
 
     // Set team_mode
-    crate::commands::team::write_team_mode(&workspace_path, Some("webdav"))?;
+    crate::plugins::team_impl::team::write_team_mode(&workspace_path, Some("webdav"))?;
 
     // Update state
     let mut state = webdav_state.lock().await;
@@ -838,7 +838,7 @@ pub async fn webdav_disconnect(
     let _ = delete_credential(&workspace_path);
 
     // Clear team_mode
-    crate::commands::team::write_team_mode(&workspace_path, None)?;
+    crate::plugins::team_impl::team::write_team_mode(&workspace_path, None)?;
 
     // Remove teamclaw-team directory
     let team_dir = Path::new(&workspace_path).join(TEAM_REPO_DIR);
@@ -930,7 +930,7 @@ pub async fn get_team_mode(
     opencode_state: State<'_, OpenCodeState>,
 ) -> Result<Option<String>, String> {
     let workspace_path = get_workspace_path(&opencode_state)?;
-    Ok(crate::commands::team::check_team_status(&workspace_path).mode)
+    Ok(crate::plugins::team_impl::team::check_team_status(&workspace_path).mode)
 }
 
 // --- Tests ---
@@ -1198,7 +1198,7 @@ mod tests {
 
     #[test]
     fn test_read_write_team_mode() {
-        use crate::commands::team::{check_team_status, write_team_mode};
+        use crate::plugins::team_impl::team::{check_team_status, write_team_mode};
         let tmp = TempDir::new().unwrap();
         let workspace = tmp.path().to_str().unwrap();
 
@@ -1214,7 +1214,7 @@ mod tests {
 
     #[test]
     fn test_team_mode_migration() {
-        use crate::commands::team::check_team_status;
+        use crate::plugins::team_impl::team::check_team_status;
         let tmp = TempDir::new().unwrap();
         let workspace = tmp.path().to_str().unwrap();
         let teamclaw_dir = tmp.path().join(super::TEAMCLAW_DIR);

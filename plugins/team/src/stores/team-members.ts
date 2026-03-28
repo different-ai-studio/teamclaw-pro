@@ -1,6 +1,6 @@
 // packages/app/src/stores/team-members.ts
 import { create } from 'zustand'
-import { invoke } from '@tauri-apps/api/core'
+import { teamInvoke } from '../invoke'
 import type { TeamMember } from '@/lib/git/types'
 
 type MemberRole = 'owner' | 'editor' | 'viewer'
@@ -46,7 +46,7 @@ export const useTeamMembersStore = create<TeamMembersState>((set, get) => ({
   loadMembers: async () => {
     set({ loading: true, error: null })
     try {
-      const members = await invoke<TeamMember[]>('unified_team_get_members')
+      const members = await teamInvoke<TeamMember[]>('unified_team_get_members')
       set({ members, loading: false })
     } catch (e) {
       set({ error: String(e), loading: false })
@@ -55,7 +55,7 @@ export const useTeamMembersStore = create<TeamMembersState>((set, get) => ({
 
   loadMyRole: async () => {
     try {
-      const role = await invoke<MemberRole | null>('unified_team_get_my_role')
+      const role = await teamInvoke<MemberRole | null>('unified_team_get_my_role')
       set({ myRole: role })
     } catch {
       set({ myRole: null })
@@ -65,7 +65,7 @@ export const useTeamMembersStore = create<TeamMembersState>((set, get) => ({
   addMember: async (member: TeamMember) => {
     set({ error: null })
     try {
-      await invoke('unified_team_add_member', { member })
+      await teamInvoke('unified_team_add_member', { member })
       await get().loadMembers()
     } catch (e) {
       set({ error: String(e) })
@@ -76,7 +76,7 @@ export const useTeamMembersStore = create<TeamMembersState>((set, get) => ({
   removeMember: async (nodeId: string) => {
     set({ error: null })
     try {
-      await invoke('unified_team_remove_member', { nodeId })
+      await teamInvoke('unified_team_remove_member', { nodeId })
       await get().loadMembers()
     } catch (e) {
       set({ error: String(e) })
@@ -87,7 +87,7 @@ export const useTeamMembersStore = create<TeamMembersState>((set, get) => ({
   updateMemberRole: async (nodeId: string, role: MemberRole) => {
     set({ error: null })
     try {
-      await invoke('unified_team_update_member_role', { nodeId, role })
+      await teamInvoke('unified_team_update_member_role', { nodeId, role })
       await get().loadMembers()
     } catch (e) {
       set({ error: String(e) })
@@ -122,7 +122,7 @@ export const useTeamMembersStore = create<TeamMembersState>((set, get) => ({
 
   approveApplication: async (app) => {
     try {
-      await invoke('oss_approve_application', {
+      await teamInvoke('oss_approve_application', {
         nodeId: app.nodeId,
         name: app.name,
         email: app.email,

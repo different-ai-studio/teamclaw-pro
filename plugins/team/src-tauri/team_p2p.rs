@@ -244,8 +244,8 @@ pub async fn create_team(
 
     // Write LLM config to .teamclaw/teamclaw.json
     let llm_config =
-        crate::commands::team::build_llm_config(llm_base_url, llm_model, llm_model_name);
-    crate::commands::team::write_llm_config(workspace_path, Some(&llm_config))?;
+        crate::plugins::team_impl::team::build_llm_config(llm_base_url, llm_model, llm_model_name);
+    crate::plugins::team_impl::team::write_llm_config(workspace_path, Some(&llm_config))?;
     println!(
         "[Team P2P] Wrote LLM config to {}/{}",
         super::TEAMCLAW_DIR,
@@ -2605,10 +2605,10 @@ pub struct P2pSyncStatus {
 
 #[tauri::command]
 pub async fn p2p_get_files_sync_status(
-    iroh_state: tauri::State<'_, crate::commands::p2p_state::IrohState>,
+    iroh_state: tauri::State<'_, crate::plugins::team_impl::p2p_state::IrohState>,
     opencode_state: tauri::State<'_, crate::commands::opencode::OpenCodeState>,
-) -> Result<Vec<crate::commands::oss_types::FileSyncStatus>, String> {
-    use crate::commands::oss_types::{FileSyncStatus, SyncFileStatus};
+) -> Result<Vec<crate::plugins::team_impl::oss_types::FileSyncStatus>, String> {
+    use crate::plugins::team_impl::oss_types::{FileSyncStatus, SyncFileStatus};
     use futures_lite::StreamExt;
 
     let workspace_path = opencode_state

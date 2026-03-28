@@ -8,7 +8,7 @@ import { DeviceIdDisplay } from '@/components/settings/DeviceIdDisplay'
 import { ApplicationDialog } from './ApplicationDialog'
 import { TeamMemberList } from '../../TeamMemberList'
 import { VersionHistorySection } from './VersionHistorySection'
-import { invoke } from '@tauri-apps/api/core'
+import { teamInvoke } from '../../../invoke'
 import type { DeviceInfo } from '@/lib/git/types'
 import { useTeamModeStore } from '../../../stores/team-mode'
 import { useProviderStore } from '@/stores/provider'
@@ -167,7 +167,7 @@ export function TeamOSSConfig() {
   // the OSS connection whenever the user switched away from the S3 tab.
 
   useEffect(() => {
-    invoke<DeviceInfo>('get_device_info').then(setDeviceInfo).catch(() => {})
+    teamInvoke<DeviceInfo>('get_device_info').then(setDeviceInfo).catch(() => {})
   }, [])
 
   useEffect(() => {

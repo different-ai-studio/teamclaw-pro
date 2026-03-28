@@ -1,8 +1,8 @@
-use crate::commands::oss_sync::OssSyncState;
-use crate::commands::oss_types::{DocType, MemberRole};
-use crate::commands::version_store::VersionStore;
-use crate::commands::version_types::{FileVersion, VersionedFileInfo};
-use crate::commands::{CONFIG_FILE_NAME, TEAMCLAW_DIR, TEAM_REPO_DIR};
+use crate::plugins::team_impl::oss_sync::OssSyncState;
+use crate::plugins::team_impl::oss_types::{DocType, MemberRole};
+use crate::plugins::team_impl::version_store::VersionStore;
+use crate::plugins::team_impl::version_types::{FileVersion, VersionedFileInfo};
+use crate::plugins::team_impl::{CONFIG_FILE_NAME, TEAMCLAW_DIR, TEAM_REPO_DIR};
 
 use std::sync::Arc;
 use tauri::State;
