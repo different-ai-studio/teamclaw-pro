@@ -1,5 +1,0 @@
-export { uiCatalog, catalogPrompt, type CatalogComponentTypes } from "./catalog"
-export { componentRegistry, fallbackComponent } from "./registry"
-export { DynamicUI, DynamicUIMessage } from "./DynamicUI"
-export { extractUITreeFromResponse } from "./generator"
-export { parseStreamingUITree, type StreamingUIState } from "./streaming"

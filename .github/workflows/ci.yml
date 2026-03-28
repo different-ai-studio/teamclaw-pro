@@ -2,21 +2,35 @@ name: CI
 
 on:
   push:
-    branches: [main, master]
+    branches: [main]
   pull_request:
-    branches: [main, master]
+    branches: [main]
 
 jobs:
-  frontend:
-    name: Lint, Typecheck & Test
+  check:
+    name: Build Check (open-source + Pro plugin)
     runs-on: ubuntu-latest
     steps:
+      # 1. Checkout open-source TeamClaw
       - uses: actions/checkout@v4
+        with:
+          repository: different-ai-studio/teamclaw
+          ref: main
+
+      # 2. Checkout Pro build config
+      - uses: actions/checkout@v4
+        with:
+          path: .pro-config
+          sparse-checkout: |
+            build.config.json
+
+      - name: Apply Pro build config
+        run: cp .pro-config/build.config.json ./build.config.json
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -28,23 +42,19 @@ jobs:
           key: pnpm-store-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: pnpm-store-${{ runner.os }}-
 
-      - name: Install dependencies
-        run: pnpm install
+      # 3. Setup SSH for private plugin repo
+      - name: Setup SSH for plugin repo
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.PLUGIN_DEPLOY_KEY }}
 
-      - name: Run ESLint
-        run: pnpm lint
+      - name: Install dependencies + Pro plugin
+        run: |
+          pnpm install
+          pnpm add @teamclaw/plugin-team@"git+ssh://git@github.com/different-ai-studio/teamclaw-plugin-team.git"
 
-      - name: Run TypeScript check
+      - name: TypeScript check
         run: pnpm typecheck
-
-      - name: Run unit tests
-        run: pnpm test:unit
-
-  rust-check:
-    name: Rust Format & Clippy
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
 
       - name: Install system dependencies
         run: |
@@ -60,13 +70,10 @@ jobs:
           workspaces: |
             ./src-tauri -> target
 
-      - name: Create stub sidecar binary (tauri-build requires it to exist)
+      - name: Create stub sidecar binary
         run: |
           mkdir -p src-tauri/binaries
           touch src-tauri/binaries/opencode-x86_64-unknown-linux-gnu
 
-      - name: Check Rust formatting
-        run: cargo fmt --check --manifest-path src-tauri/Cargo.toml
-
-      - name: Run Clippy
-        run: cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings
+      - name: Cargo check (with team + p2p features)
+        run: cargo check --manifest-path src-tauri/Cargo.toml --features team,p2p

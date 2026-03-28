@@ -64,7 +64,22 @@ jobs:
             runner: macos-latest
     runs-on: ${{ matrix.runner }}
     steps:
+      # 1. Check out open-source TeamClaw (the "shell")
       - uses: actions/checkout@v4
+        with:
+          repository: different-ai-studio/teamclaw
+          ref: main
+
+      # 2. Check out Pro build config from this repo
+      - uses: actions/checkout@v4
+        with:
+          path: .pro-config
+          sparse-checkout: |
+            build.config.json
+
+      # 3. Apply Pro build config overlay
+      - name: Apply Pro build config
+        run: cp .pro-config/build.config.json ./build.config.json
 
       - name: Write production build config from secret
         env:
@@ -96,6 +111,11 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
+      - name: Setup SSH for plugin repo
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.PLUGIN_DEPLOY_KEY }}
+
       - name: Cache pnpm store
         uses: actions/cache@v4
         with:
@@ -118,7 +138,7 @@ jobs:
             ./src-tauri -> target
           key: ${{ matrix.target }}
 
-      # Parallel: pnpm install + frontend build, opencode download, certificate import
+      # 4. Install Pro plugin + build frontend + download opencode + import cert (parallel)
       - name: Build all (parallel)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -128,9 +148,10 @@ jobs:
         run: |
           mkdir -p src-tauri/binaries
 
-          # 1) pnpm install → then frontend build (sequential chain, backgrounded)
+          # 1) Install Pro plugin → pnpm install → frontend build (sequential chain, backgrounded)
           (
             set -e
+            pnpm add @teamclaw/plugin-team@"git+ssh://git@github.com/different-ai-studio/teamclaw-plugin-team.git"
             pnpm install
             echo "pnpm install done, building frontend..."
             BUILD_ENV=production pnpm --filter @teamclaw/app build
@@ -218,7 +239,7 @@ jobs:
 
             ### macOS (one-line install)
             ```bash
-            curl -fsSL https://raw.githubusercontent.com/diffrent-ai-studio/teamclaw/main/scripts/install-mac.sh | bash
+            curl -fsSL https://raw.githubusercontent.com/different-ai-studio/teamclaw/main/scripts/install-mac.sh | bash
             ```
 
             ### macOS (manual)
@@ -236,7 +257,8 @@ jobs:
             Download and run the `.exe` installer below.
           releaseDraft: false
           prerelease: false
-          args: "--target ${{ matrix.target }}"
+          # macOS: build with team + p2p features
+          args: "--target ${{ matrix.target }} -- --features team,p2p"
 
       - name: Upload artifacts to Alibaba Cloud OSS
         env:
@@ -251,17 +273,12 @@ jobs:
           VERSION="${{ github.ref_name }}"
           ARTIFACTS_DIR="src-tauri/target/${{ matrix.target }}/release/bundle"
 
-          # Upload DMG
           for f in "$ARTIFACTS_DIR"/dmg/*.dmg; do
             [ -f "$f" ] && ossutil cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
           done
-
-          # Upload .tar.gz (macOS updater bundle)
           for f in "$ARTIFACTS_DIR"/macos/*.tar.gz; do
             [ -f "$f" ] && ossutil cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
           done
-
-          # Upload .tar.gz.sig (updater signature)
           for f in "$ARTIFACTS_DIR"/macos/*.tar.gz.sig; do
             [ -f "$f" ] && ossutil cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
           done
@@ -274,6 +291,19 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          repository: different-ai-studio/teamclaw
+          ref: main
+
+      - uses: actions/checkout@v4
+        with:
+          path: .pro-config
+          sparse-checkout: |
+            build.config.json
+
+      - name: Apply Pro build config
+        shell: bash
+        run: cp .pro-config/build.config.json ./build.config.json
 
       - name: Write production build config from secret
         env:
@@ -307,6 +337,11 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
+      - name: Setup SSH for plugin repo
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.PLUGIN_DEPLOY_KEY }}
+
       - name: Cache pnpm store
         uses: actions/cache@v4
         with:
@@ -326,10 +361,11 @@ jobs:
           workspaces: |
             ./src-tauri -> target
 
-      - name: Install dependencies and build frontend
+      - name: Install Pro plugin and build frontend
         env:
           BUILD_ENV: production
         run: |
+          pnpm add @teamclaw/plugin-team@"git+ssh://git@github.com/different-ai-studio/teamclaw-plugin-team.git"
           pnpm install
           pnpm --filter @teamclaw/app build
 
@@ -347,7 +383,6 @@ jobs:
           echo "opencode ${OPENCODE_VERSION} ready"
           ls -lh src-tauri/binaries/
 
-      # Skip beforeBuildCommand since frontend is already built above
       - name: Skip frontend rebuild in tauri build
         shell: python
         run: |
@@ -374,7 +409,7 @@ jobs:
 
             ### macOS (one-line install)
             ```bash
-            curl -fsSL https://raw.githubusercontent.com/diffrent-ai-studio/teamclaw/main/scripts/install-mac.sh | bash
+            curl -fsSL https://raw.githubusercontent.com/different-ai-studio/teamclaw/main/scripts/install-mac.sh | bash
             ```
 
             ### macOS (manual)
@@ -386,14 +421,12 @@ jobs:
                ```
             4. Open TeamClaw from Applications
 
-            > **Why is this needed?** TeamClaw is not yet notarized with Apple. macOS blocks unsigned apps downloaded from the internet. The command above removes this restriction.
-
             ### Windows
             Download and run the `.exe` installer below.
           releaseDraft: false
           prerelease: false
-          # Windows: NSIS installer, no p2p feature (avoids wmi/windows-core conflicts)
-          args: "--bundles nsis -- --no-default-features"
+          # Windows: team feature only (no p2p to avoid wmi/windows-core conflicts)
+          args: "--bundles nsis -- --features team"
 
       - name: Upload artifacts to Alibaba Cloud OSS
         env:
@@ -412,17 +445,12 @@ jobs:
           VERSION="${{ github.ref_name }}"
           ARTIFACTS_DIR="src-tauri/target/release/bundle"
 
-          # Upload NSIS installer
           for f in "$ARTIFACTS_DIR"/nsis/*.exe; do
             [ -f "$f" ] && ossutil cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
           done
-
-          # Upload .nsis.zip (Windows updater bundle)
           for f in "$ARTIFACTS_DIR"/nsis/*.nsis.zip; do
             [ -f "$f" ] && ossutil cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
           done
-
-          # Upload .nsis.zip.sig (updater signature)
           for f in "$ARTIFACTS_DIR"/nsis/*.nsis.zip.sig; do
             [ -f "$f" ] && ossutil cp "$f" "oss://$OSS_BUCKET/teamclaw-pro/releases/$VERSION/$(basename "$f")" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
           done
@@ -433,8 +461,6 @@ jobs:
     if: always() && needs.release-macos.result == 'success'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
       - name: Generate and upload updater JSON
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -452,11 +478,9 @@ jobs:
           NOTES="TeamClaw Pro $VERSION"
           PUB_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-          # Download signature files from the GitHub release
           mkdir -p /tmp/sigs
           gh release download "$VERSION" --pattern "*.sig" --dir /tmp/sigs || true
 
-          # Read signatures
           MAC_AARCH64_SIG=""
           MAC_X64_SIG=""
           WIN_SIG=""
@@ -464,12 +488,10 @@ jobs:
           for f in /tmp/sigs/*x64*tar.gz.sig /tmp/sigs/*x86_64*tar.gz.sig; do [ -f "$f" ] && MAC_X64_SIG=$(cat "$f"); done
           for f in /tmp/sigs/*nsis.zip.sig; do [ -f "$f" ] && WIN_SIG=$(cat "$f"); done
 
-          # Find artifact filenames from release
           MAC_AARCH64_FILE=$(gh release view "$VERSION" --json assets -q '.assets[].name' | grep 'aarch64.*tar.gz$' | head -1)
           MAC_X64_FILE=$(gh release view "$VERSION" --json assets -q '.assets[].name' | grep -E '(x64|x86_64).*tar.gz$' | head -1)
           WIN_FILE=$(gh release view "$VERSION" --json assets -q '.assets[].name' | grep 'nsis.zip$' | head -1)
 
-          # Build updater JSON
           cat > /tmp/latest.json <<ENDJSON
           {
             "version": "$VERSION",
@@ -495,6 +517,5 @@ jobs:
           echo "Generated updater JSON:"
           cat /tmp/latest.json
 
-          # Upload to OSS
           ossutil cp /tmp/latest.json "oss://$OSS_BUCKET/teamclaw-pro/update.json" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
           echo "Updater JSON uploaded to OSS"
