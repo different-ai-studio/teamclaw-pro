@@ -3,6 +3,7 @@
  * Extracted from TeamSection.tsx.
  */
 import * as React from 'react'
+import { teamInvoke } from '../../../invoke'
 import { useTranslation } from 'react-i18next'
 import {
   Users,
@@ -50,8 +51,7 @@ async function tauriInvoke<T>(cmd: string, args?: Record<string, unknown>): Prom
   if (!isTauri()) {
     throw new Error(`Team feature requires ${buildConfig.app.name} desktop app (Tauri not available)`)
   }
-  const { invoke } = await import('@tauri-apps/api/core')
-  return invoke<T>(cmd, args)
+  return teamInvoke<T>(cmd, args)
 }
 
 function SettingCard({ children, className }: { children: React.ReactNode; className?: string }) {
@@ -757,8 +757,7 @@ export function TeamP2PConfig() {
                               onClick={async () => {
                                 const role = approveRoles[app.nodeId] ?? 'editor'
                                 try {
-                                  const { invoke: inv } = await import('@tauri-apps/api/core')
-                                  await inv('unified_team_add_member', {
+                                  await teamInvoke('unified_team_add_member', {
                                     member: {
                                       nodeId: app.nodeId,
                                       name: app.name,

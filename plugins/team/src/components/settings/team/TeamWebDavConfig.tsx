@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { invoke } from '@tauri-apps/api/core'
+import { teamInvoke } from '../../../invoke'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import type { WebDavSyncStatus, WebDavSyncResult } from '@/lib/git/types'
@@ -39,7 +39,7 @@ export function TeamWebDavConfig() {
 
   const loadStatus = useCallback(async () => {
     try {
-      const s = await invoke<WebDavSyncStatus>('webdav_get_status')
+      const s = await teamInvoke<WebDavSyncStatus>('webdav_get_status')
       setStatus(s)
       setConnectionState(s.connected ? 'connected' : 'disconnected')
       if (s.error) setError(s.error)
@@ -54,7 +54,7 @@ export function TeamWebDavConfig() {
 
   const handleSync = async () => {
     try {
-      await invoke<WebDavSyncResult>('webdav_sync')
+      await teamInvoke<WebDavSyncResult>('webdav_sync')
       await loadStatus()
     } catch (e) {
       setError(String(e))
@@ -69,7 +69,7 @@ export function TeamWebDavConfig() {
         ? { type: 'basic' as const, username, password }
         : { type: 'bearer' as const, token }
 
-      await invoke('webdav_connect', { url, auth })
+      await teamInvoke('webdav_connect', { url, auth })
       setConnectionState('connected')
       await handleSync()
     } catch (e) {
@@ -80,7 +80,7 @@ export function TeamWebDavConfig() {
 
   const handleDisconnect = async () => {
     try {
-      await invoke('webdav_disconnect')
+      await teamInvoke('webdav_disconnect')
       setConnectionState('disconnected')
       setStatus(null)
       setError(null)
@@ -91,7 +91,7 @@ export function TeamWebDavConfig() {
 
   const handleExport = async () => {
     try {
-      const configJson = await invoke<string>('webdav_export_config', {
+      const configJson = await teamInvoke<string>('webdav_export_config', {
         password: exportPassword,
       })
       const blob = new Blob([configJson], { type: 'application/json' })
@@ -111,7 +111,7 @@ export function TeamWebDavConfig() {
   const handleImport = async () => {
     if (!importFile) return
     try {
-      await invoke('webdav_import_config', {
+      await teamInvoke('webdav_import_config', {
         configJson: importFile,
         password: importPassword,
       })

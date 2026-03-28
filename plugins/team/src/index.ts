@@ -1,4 +1,5 @@
 import { registerPlugin } from '@/plugins/registry'
+import { teamInvoke } from './invoke'
 import { registerVersionHistoryProvider } from '@/stores/version-history'
 import { Users } from 'lucide-react'
 import { lazy } from 'react'
@@ -61,15 +62,12 @@ registerPlugin({
 // Register version history provider
 registerVersionHistoryProvider({
   listFiles: async (workspacePath, docType) => {
-    const { invoke } = await import('@tauri-apps/api/core')
-    return invoke<VersionedFileInfo[]>('team_list_all_versioned_files', { workspacePath, docType: docType ?? null })
+    return teamInvoke<VersionedFileInfo[]>('team_list_all_versioned_files', { workspacePath, docType: docType ?? null })
   },
   listVersions: async (workspacePath, docType, filePath) => {
-    const { invoke } = await import('@tauri-apps/api/core')
-    return invoke<FileVersion[]>('team_list_file_versions', { workspacePath, docType, filePath })
+    return teamInvoke<FileVersion[]>('team_list_file_versions', { workspacePath, docType, filePath })
   },
   restore: async (workspacePath, docType, filePath, versionIndex) => {
-    const { invoke } = await import('@tauri-apps/api/core')
-    return invoke('team_restore_file_version', { workspacePath, docType, filePath, versionIndex })
+    return teamInvoke('team_restore_file_version', { workspacePath, docType, filePath, versionIndex })
   },
 })

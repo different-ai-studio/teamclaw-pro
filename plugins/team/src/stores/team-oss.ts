@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { invoke } from '@tauri-apps/api/core'
+import { teamInvoke } from '../invoke'
 import { listen, type UnlistenFn } from '@tauri-apps/api/event'
 import { buildConfig } from '@/lib/build-config'
 
@@ -165,11 +165,11 @@ export const useTeamOssStore = create<TeamOssState>((set, get) => ({
         },
       })
 
-      const config = await invoke<OssTeamConfig | null>('oss_get_team_config', { workspacePath })
+      const config = await teamInvoke<OssTeamConfig | null>('oss_get_team_config', { workspacePath })
       if (config?.enabled) {
         set({ configured: true })
         try {
-          const info = await invoke<OssTeamInfo>('oss_restore_sync', {
+          const info = await teamInvoke<OssTeamInfo>('oss_restore_sync', {
             workspacePath,
             teamId: config.teamId,
           })
@@ -180,7 +180,7 @@ export const useTeamOssStore = create<TeamOssState>((set, get) => ({
         }
       } else {
         // Check for pending application
-        const pending = await invoke<PendingApplication | null>('oss_get_pending_application', { workspacePath })
+        const pending = await teamInvoke<PendingApplication | null>('oss_get_pending_application', { workspacePath })
         if (pending) {
           set({ pendingApplication: pending })
         }
@@ -193,7 +193,7 @@ export const useTeamOssStore = create<TeamOssState>((set, get) => ({
 
   createTeam: async (params) => {
     try {
-      const info = await invoke<OssTeamInfo>('oss_create_team', {
+      const info = await teamInvoke<OssTeamInfo>('oss_create_team', {
         ...params,
         teamEndpoint: buildConfig.s3?.teamEndpoint ?? '',
         forcePathStyle: buildConfig.s3?.forcePathStyle ?? false,
@@ -214,7 +214,7 @@ export const useTeamOssStore = create<TeamOssState>((set, get) => ({
 
   joinTeam: async (params) => {
     try {
-      const result = await invoke<OssJoinResult>('oss_join_team', {
+      const result = await teamInvoke<OssJoinResult>('oss_join_team', {
         ...params,
         teamEndpoint: buildConfig.s3?.teamEndpoint ?? '',
         forcePathStyle: buildConfig.s3?.forcePathStyle ?? false,
@@ -248,7 +248,7 @@ export const useTeamOssStore = create<TeamOssState>((set, get) => ({
 
   leaveTeam: async (workspacePath) => {
     try {
-      await invoke('oss_leave_team', { workspacePath })
+      await teamInvoke('oss_leave_team', { workspacePath })
       set({
         configured: false,
         connected: false,
@@ -266,7 +266,7 @@ export const useTeamOssStore = create<TeamOssState>((set, get) => ({
   syncNow: async (workspacePath) => {
     set({ syncing: true })
     try {
-      const status = await invoke<SyncStatus>('oss_sync_now', { workspacePath })
+      const status = await teamInvoke<SyncStatus>('oss_sync_now', { workspacePath })
       set({ syncStatus: status, syncing: false })
     } catch (e) {
       set({ syncing: false, error: String(e) })
@@ -275,7 +275,7 @@ export const useTeamOssStore = create<TeamOssState>((set, get) => ({
 
   loadSyncStatus: async (workspacePath) => {
     try {
-      const status = await invoke<SyncStatus>('oss_get_sync_status', { workspacePath })
+      const status = await teamInvoke<SyncStatus>('oss_get_sync_status', { workspacePath })
       set({ syncStatus: status, connected: status.connected })
     } catch (e) {
       set({ error: String(e) })
@@ -283,25 +283,25 @@ export const useTeamOssStore = create<TeamOssState>((set, get) => ({
   },
 
   createSnapshot: async (workspacePath, docType) => {
-    await invoke('oss_create_snapshot', { workspacePath, docType })
+    await teamInvoke('oss_create_snapshot', { workspacePath, docType })
   },
 
   cleanupUpdates: async (workspacePath, docType) => {
-    return await invoke<CleanupResult>('oss_cleanup_updates', { workspacePath, docType })
+    return await teamInvoke<CleanupResult>('oss_cleanup_updates', { workspacePath, docType })
   },
 
   updateMembers: async (workspacePath, members) => {
-    await invoke('oss_update_members', { workspacePath, members })
+    await teamInvoke('oss_update_members', { workspacePath, members })
     set({ members })
   },
 
   resetTeamSecret: async (workspacePath) => {
-    return await invoke<string>('oss_reset_team_secret', { workspacePath })
+    return await teamInvoke<string>('oss_reset_team_secret', { workspacePath })
   },
 
   applyToTeam: async (params) => {
     try {
-      await invoke('oss_apply_team', {
+      await teamInvoke('oss_apply_team', {
         ...params,
         teamEndpoint: buildConfig.s3?.teamEndpoint ?? '',
         forcePathStyle: buildConfig.s3?.forcePathStyle ?? false,
@@ -320,7 +320,7 @@ export const useTeamOssStore = create<TeamOssState>((set, get) => ({
 
   loadPendingApplication: async (workspacePath) => {
     try {
-      const pending = await invoke<PendingApplication | null>('oss_get_pending_application', { workspacePath })
+      const pending = await teamInvoke<PendingApplication | null>('oss_get_pending_application', { workspacePath })
       set({ pendingApplication: pending })
     } catch {
       // ignore
@@ -329,7 +329,7 @@ export const useTeamOssStore = create<TeamOssState>((set, get) => ({
 
   cancelApplication: async (workspacePath) => {
     try {
-      await invoke('oss_cancel_application', { workspacePath })
+      await teamInvoke('oss_cancel_application', { workspacePath })
       set({ pendingApplication: null })
     } catch (e) {
       set({ error: String(e) })
@@ -357,7 +357,7 @@ export const useTeamOssStore = create<TeamOssState>((set, get) => ({
 
   loadFileSyncStatus: async () => {
     try {
-      const statuses = await invoke<FileSyncStatus[]>('oss_get_files_sync_status', {})
+      const statuses = await teamInvoke<FileSyncStatus[]>('oss_get_files_sync_status', {})
       const map: Record<string, 'synced' | 'modified' | 'new'> = {}
       for (const s of statuses) {
         map[s.path] = s.status

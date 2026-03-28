@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { teamInvoke } from '../invoke'
 import {
   addCustomProviderToConfig,
   removeCustomProviderFromConfig,
@@ -45,8 +46,7 @@ interface TeamStatusResponse {
 async function fetchTeamStatus(): Promise<TeamStatusResponse | null> {
   if (!isTauri()) return null
   try {
-    const { invoke } = await import('@tauri-apps/api/core')
-    return await invoke<TeamStatusResponse>('get_team_status')
+    return await teamInvoke<TeamStatusResponse>('get_team_status')
   } catch (err) {
     console.warn('[TeamMode] Failed to read team status:', err)
     return null
@@ -55,8 +55,7 @@ async function fetchTeamStatus(): Promise<TeamStatusResponse | null> {
 
 async function getDeviceNodeId(): Promise<string> {
   if (!isTauri()) return ''
-  const { invoke } = await import('@tauri-apps/api/core')
-  const info = await invoke<{ nodeId: string }>('get_device_info')
+  const info = await teamInvoke<{ nodeId: string }>('get_device_info')
   return info.nodeId
 }
 
@@ -84,8 +83,7 @@ export const useTeamModeStore = create<TeamModeState>((set, get) => ({
     let ossConfigured = false
     if (isTauri()) {
       try {
-        const { invoke } = await import('@tauri-apps/api/core')
-        const ossConfig = await invoke<{ enabled?: boolean } | null>('oss_get_team_config', { workspacePath: _workspacePath })
+        const ossConfig = await teamInvoke<{ enabled?: boolean } | null>('oss_get_team_config', { workspacePath: _workspacePath })
         ossConfigured = !!ossConfig?.enabled
       } catch { /* ignore */ }
     }
@@ -109,10 +107,9 @@ export const useTeamModeStore = create<TeamModeState>((set, get) => ({
     }
     // Load user's role and P2P connection status (non-critical)
     try {
-      const { invoke } = await import('@tauri-apps/api/core')
-      const role = await invoke<string | null>('unified_team_get_my_role')
+      const role = await teamInvoke<string | null>('unified_team_get_my_role')
       set({ myRole: role as any })
-      const syncStatus = await invoke<{ connected?: boolean; namespaceId?: string | null }>('p2p_sync_status').catch(() => null)
+      const syncStatus = await teamInvoke<{ connected?: boolean; namespaceId?: string | null }>('p2p_sync_status').catch(() => null)
       set({ p2pConnected: syncStatus?.connected ?? false, p2pConfigured: !!syncStatus?.namespaceId })
       if (syncStatus?.connected) {
         get().loadP2pFileSyncStatus()
@@ -248,8 +245,7 @@ export const useTeamModeStore = create<TeamModeState>((set, get) => ({
   loadP2pFileSyncStatus: async () => {
     if (!isTauri()) return
     try {
-      const { invoke } = await import('@tauri-apps/api/core')
-      const statuses = await invoke<Array<{ path: string; docType: string; status: 'synced' | 'modified' | 'new' }>>('p2p_get_files_sync_status')
+      const statuses = await teamInvoke<Array<{ path: string; docType: string; status: 'synced' | 'modified' | 'new' }>>('p2p_get_files_sync_status')
       const map: Record<string, 'synced' | 'modified' | 'new'> = {}
       for (const s of statuses) {
         map[s.path] = s.status

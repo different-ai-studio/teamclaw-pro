@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { teamInvoke } from '../invoke'
 import { useTranslation } from 'react-i18next'
 import { Trophy, Flame, MessageSquareHeart, ChevronRight } from 'lucide-react'
 import { cn, isTauri } from '@/lib/utils'
@@ -9,8 +10,7 @@ async function tauriInvoke<T>(
   cmd: string,
   args?: Record<string, unknown>,
 ): Promise<T> {
-  const { invoke } = await import("@tauri-apps/api/core")
-  return invoke<T>(cmd, args)
+  return teamInvoke<T>(cmd, args)
 }
 
 interface LeaderboardStats {

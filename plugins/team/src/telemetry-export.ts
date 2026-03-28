@@ -1,4 +1,5 @@
 import { isTauri } from '@/lib/utils'
+import { teamInvoke } from './invoke'
 
 const TEAM_EXPORT_DEBOUNCE_MS = 5 * 60 * 1000
 let teamExportTimerId: ReturnType<typeof setTimeout> | null = null
@@ -17,10 +18,9 @@ export function scheduleTeamFeedbackExport(force: boolean = false) {
   teamExportTimerId = setTimeout(async () => {
     teamExportTimerId = null
     try {
-      const { invoke } = await import('@tauri-apps/api/core')
       await Promise.all([
-        invoke('telemetry_export_team_feedback', {}),
-        invoke('telemetry_export_leaderboard', {}),
+        teamInvoke('telemetry_export_team_feedback', {}),
+        teamInvoke('telemetry_export_leaderboard', {}),
       ])
       lastTeamExportAt = Date.now()
     } catch (err) {
