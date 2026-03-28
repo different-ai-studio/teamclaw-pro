@@ -218,6 +218,9 @@ jobs:
           with open('src-tauri/tauri.conf.json', 'r') as f:
               conf = json.load(f)
           conf['build']['beforeBuildCommand'] = 'echo frontend already built'
+          conf.setdefault('plugins', {}).setdefault('updater', {})['endpoints'] = [
+              'https://github.com/different-ai-studio/teamclaw-pro/releases/latest/download/latest.json'
+          ]
           with open('src-tauri/tauri.conf.json', 'w') as f:
               json.dump(conf, f, indent=2)
           "
@@ -390,6 +393,9 @@ jobs:
           with open('src-tauri/tauri.conf.json', 'r') as f:
               conf = json.load(f)
           conf['build']['beforeBuildCommand'] = 'echo frontend already built'
+          conf.setdefault('plugins', {}).setdefault('updater', {})['endpoints'] = [
+              'https://github.com/different-ai-studio/teamclaw-pro/releases/latest/download/latest.json'
+          ]
           with open('src-tauri/tauri.conf.json', 'w') as f:
               json.dump(conf, f, indent=2)
 
@@ -478,6 +484,7 @@ jobs:
           fi
 
           VERSION="${{ github.ref_name }}"
+          GH_BASE="https://github.com/different-ai-studio/teamclaw-pro/releases/download/$VERSION"
           OSS_BASE="https://teamclaw.ucar.cc/teamclaw-pro/releases/$VERSION"
           NOTES="TeamClaw Pro $VERSION"
           PUB_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -496,6 +503,7 @@ jobs:
           MAC_X64_FILE=$(gh release view "$VERSION" --json assets -q '.assets[].name' | grep -E '(x64|x86_64).*tar.gz$' | head -1)
           WIN_FILE=$(gh release view "$VERSION" --json assets -q '.assets[].name' | grep 'nsis.zip$' | head -1)
 
+          # Generate updater JSON with GitHub Release download URLs
           cat > /tmp/latest.json <<ENDJSON
           {
             "version": "$VERSION",
@@ -504,15 +512,15 @@ jobs:
             "platforms": {
               "darwin-aarch64": {
                 "signature": "$MAC_AARCH64_SIG",
-                "url": "$OSS_BASE/$MAC_AARCH64_FILE"
+                "url": "$GH_BASE/$MAC_AARCH64_FILE"
               },
               "darwin-x86_64": {
                 "signature": "$MAC_X64_SIG",
-                "url": "$OSS_BASE/$MAC_X64_FILE"
+                "url": "$GH_BASE/$MAC_X64_FILE"
               },
               "windows-x86_64": {
                 "signature": "$WIN_SIG",
-                "url": "$OSS_BASE/$WIN_FILE"
+                "url": "$GH_BASE/$WIN_FILE"
               }
             }
           }
@@ -521,5 +529,9 @@ jobs:
           echo "Generated updater JSON:"
           cat /tmp/latest.json
 
+          # Upload to GitHub Release (primary, used by Tauri updater)
+          gh release upload "$VERSION" /tmp/latest.json --clobber
+
+          # Also upload to OSS as backup
           ossutil cp /tmp/latest.json "oss://$OSS_BUCKET/teamclaw-pro/update.json" -e "$OSS_ENDPOINT" -i "$OSS_ACCESS_KEY_ID" -k "$OSS_ACCESS_KEY_SECRET" --force
-          echo "Updater JSON uploaded to OSS"
+          echo "Updater JSON uploaded to GitHub Release and OSS"
