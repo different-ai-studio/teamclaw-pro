@@ -6,7 +6,7 @@ import type { VersionedFileInfo, FileVersion } from '@/stores/version-history'
 import { useOssSyncInit } from './hooks/useOssSyncInit'
 import { useP2pAutoReconnect } from './hooks/useP2pAutoReconnect'
 
-const TeamSection = lazy(() => import('@/components/settings/TeamSection').then(m => ({ default: m.TeamSection })))
+const TeamSection = lazy(() => import('./components/TeamSection').then(m => ({ default: m.TeamSection })))
 
 registerPlugin({
   id: 'team-sync',

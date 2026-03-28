@@ -86,7 +86,7 @@ beforeEach(() => {
 
 describe('TeamSection Allowlist Integration', () => {
   it('P2P content shows Device ID section', async () => {
-    const { TeamSection } = await import('../components/settings/TeamSection')
+    const { TeamSection } = await import('../plugins/team/components/TeamSection')
 
     await act(async () => {
       render(React.createElement(TeamSection))
@@ -101,7 +101,7 @@ describe('TeamSection Allowlist Integration', () => {
   })
 
   it('P2P content shows team member list when owner', async () => {
-    const { TeamSection } = await import('../components/settings/TeamSection')
+    const { TeamSection } = await import('../plugins/team/components/TeamSection')
 
     await act(async () => {
       render(React.createElement(TeamSection))

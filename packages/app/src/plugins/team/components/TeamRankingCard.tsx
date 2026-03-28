@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Trophy, Flame, MessageSquareHeart, ChevronRight } from 'lucide-react'
 import { cn, isTauri } from '@/lib/utils'
 import { TEAM_SYNCED_EVENT } from '@/lib/build-config'
-import { useTeamModeStore } from '@/plugins/team/stores/team-mode'
+import { useTeamModeStore } from '../stores/team-mode'
 
 async function tauriInvoke<T>(
   cmd: string,

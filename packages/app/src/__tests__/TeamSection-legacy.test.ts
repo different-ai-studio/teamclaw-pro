@@ -55,7 +55,7 @@ beforeEach(() => {
 
 describe('TeamSection dual tabs (P2P / S3)', () => {
   it('shows exactly two tabs: P2P and S3', async () => {
-    const { TeamSection } = await import('../components/settings/TeamSection')
+    const { TeamSection } = await import('../plugins/team/components/TeamSection')
 
     await act(async () => {
       render(React.createElement(TeamSection))
@@ -68,7 +68,7 @@ describe('TeamSection dual tabs (P2P / S3)', () => {
   })
 
   it('does not show a Git or WebDAV tab', async () => {
-    const { TeamSection } = await import('../components/settings/TeamSection')
+    const { TeamSection } = await import('../plugins/team/components/TeamSection')
 
     await act(async () => {
       render(React.createElement(TeamSection))
